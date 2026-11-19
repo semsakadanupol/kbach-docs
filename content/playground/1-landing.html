@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Landing page</title>
+    <style>
+      /* the page's animations, used as animate-(--enter) and so on */
+      :root {
+        --enter: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        --pop: rise 250ms ease-out;
+        --drop: drop 200ms ease-out;
+        --marquee: marquee 30s linear infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        :root {
+          --enter: none;
+          --pop: none;
+          --drop: none;
+          --marquee: none;
+        }
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+      }
+      @keyframes drop {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+      }
+      @keyframes marquee {
+        to {
+          transform: translateX(-50%);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <!-- surface, ink, muted, line, card, well, brand, accent and code come from kbach.config.js:
+         they follow light and dark mode, so the page needs no dark: classes for them -->
+    <div class="relative isolate -m-6 min-h-screen overflow-x-clip px-6 pt-3 pb-16">
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute -top-48 left-1/2 -z-10 h-[30rem] w-[52rem] -translate-x-1/2 rounded-full bg-linear-to-r from-amber-4/40 via-orange-4/30 to-rose-4/30 blur-3xl dark:opacity-40"
+      ></div>
+
+      <!-- the bar: frosted once the page scrolls -->
+      <header
+        id="site-header"
+        class="sticky top-3 z-30 mx-auto flex max-w-5xl flex-wrap items-center justify-between rounded-2xl px-3 py-2 transition"
+      >
+        <div class="flex items-center gap-1">
+          <button
+            id="menu-button"
+            aria-label="Menu"
+            aria-expanded="false"
+            aria-controls="mobile-menu"
+            class="-ml-1 grid size-9 place-items-center rounded-full hover:bg-ink/5 sm:hidden"
+          >
+            <svg
+              data-icon="open"
+              viewBox="0 0 24 24"
+              class="size-5 fill-none stroke-current stroke-2"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            <svg
+              data-icon="close"
+              viewBox="0 0 24 24"
+              class="hidden size-5 fill-none stroke-current stroke-2"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+          <!-- the Kbach logo: gold on cream in light mode, gold on slate in dark -->
+          <a href="#" class="flex items-center gap-2 font-semibold">
+            <img src="/kbach-logo-light-64.png" alt="" class="size-7 rounded-lg dark:hidden" />
+            <img src="/kbach-logo-64.png" alt="" class="hidden size-7 rounded-lg dark:block" />
+            Kbach
+          </a>
+        </div>
+
+        <nav class="hidden gap-7 text-sm text-muted sm:flex *:transition-colors *:hover:text-ink">
+          <a href="#try">Try it</a>
+          <a href="#features">Features</a>
+          <a href="#">Docs</a>
+        </nav>
+
+        <a
+          href="#try"
+          class="rounded-full bg-ink px-4 py-1.5 text-xs font-semibold text-surface hover:bg-ink/80"
+        >
+          Get started →
+        </a>
+
+        <!-- the phone menu: opens under the bar -->
+        <nav
+          id="mobile-menu"
+          class="mt-3 hidden w-full animate-(--drop) rounded-2xl bg-card/70 p-1.5 text-sm font-medium backdrop-blur-xl sm:hidden *:block *:rounded-xl *:px-3 *:py-2.5 *:hover:bg-well"
+        >
+          <a href="#try">Try it</a>
+          <a href="#features">Features</a>
+          <a href="#">Docs</a>
+        </nav>
+      </header>
+
+      <!-- the hero: each part rises in, a little after the one before -->
+      <main class="mx-auto flex max-w-3xl flex-col items-center pt-16 text-center sm:pt-24">
+        <a
+          href="#try"
+          class="inline-flex animate-(--enter) items-center gap-2 rounded-full border border-brand/30 bg-brand/10 py-1 pr-3 pl-1 text-xs font-medium text-accent hover:border-brand/60"
+        >
+          <span class="rounded-full bg-brand px-2 py-0.5 font-semibold text-white">New</span>
+          Tailwind CSS-compatible class names →
+        </a>
+
+        <h1
+          class="mt-6 text-4xl font-bold tracking-tight text-balance animate-(--enter) [animation-delay:90ms] pb-2 bg-linear-to-b from-ink to-muted bg-clip-text text-transparent sm:text-6xl"
+        >
+          One set of classes for React, React Native and plain HTML
+        </h1>
+        <p
+          class="mt-5 max-w-xl animate-(--enter) text-lg text-pretty text-muted [animation-delay:180ms]"
+        >
+          Kbach turns utility classes into CSS on the web and into style objects on native, all from
+          one Rust engine.
+        </p>
+
+        <!-- pick a package, copy its command -->
+        <div
+          class="mt-10 w-full max-w-lg animate-(--enter) overflow-hidden rounded-xl border border-line bg-card text-left shadow-xl shadow-ink/5 [animation-delay:270ms]"
+        >
+          <div class="gap-4 border-b border-line bg-well/40 px-3 py-2 text-center">
+            <div
+              role="group"
+              aria-label="Package"
+              class="flex *:flex-1 *:border *:border-line gap-1 text-sm font-medium *:rounded-md *:py-1 *:transition-colors"
+            >
+              <button data-cmd="npm install @kbach/react">React</button>
+              <button data-cmd="npm install @kbach/react-native">React Native</button>
+              <button data-cmd="npx @kbach/cli init">CLI setup</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-2 pl-4 font-mono text-sm">
+            <span class="text-brand select-none">$</span>
+            <code id="command" class="min-w-0 flex-1 truncate"></code>
+            <button
+              id="copy"
+              class="w-20 shrink-0 rounded-lg bg-ink py-1.5 text-center font-sans text-xs font-semibold text-surface transition hover:bg-ink/80"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <!-- works with: each one's official logo; the strip scrolls on its own, and waits under the
+           pointer. (The black logos, Next.js and Expo, turn white in dark mode: dark:invert.) -->
+      <section
+        aria-label="Works with"
+        class="group mx-auto mt-16 max-w-4xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]"
+      >
+        <ul
+          id="marquee"
+          class="flex w-max animate-(--marquee) gap-12 pr-12 text-sm font-semibold text-muted group-hover:[animation-play-state:paused] *:flex *:items-center *:gap-2"
+        >
+          <li><img src="/logos/react.svg" alt="" class="size-5" />React</li>
+          <li><img src="/logos/nextjs.svg" alt="" class="size-5 dark:invert" />Next.js</li>
+          <li><img src="/logos/vite.svg" alt="" class="size-5" />Vite</li>
+          <li><img src="/logos/postcss.svg" alt="" class="size-5" />PostCSS</li>
+          <li><img src="/logos/react.svg" alt="" class="size-5" />React Native</li>
+          <li><img src="/logos/expo.svg" alt="" class="size-5 dark:invert" />Expo</li>
+          <li><img src="/logos/html5.svg" alt="" class="size-5" />Plain HTML</li>
+        </ul>
+      </section>
+
+      <!-- try it: each choice swaps one class on the button -->
+      <section id="try" data-reveal class="mx-auto mt-24 max-w-5xl scroll-mt-24">
+        <div class="text-center">
+          <p class="text-sm font-semibold text-accent">Try it</p>
+          <h2 class="mt-2 text-3xl font-bold tracking-tight">Build a button from classes</h2>
+          <p class="mx-auto mt-3 max-w-xl text-muted">
+            Each choice swaps one class. The page makes its CSS the moment it's used.
+          </p>
+        </div>
+
+        <div
+          class="mt-10 grid overflow-hidden rounded-2xl border border-line bg-card/70 md:grid-cols-2"
+        >
+          <div class="space-y-6 border-b border-line p-6 md:border-r md:border-b-0">
+            <fieldset>
+              <legend class="text-xs font-semibold text-muted uppercase">Color</legend>
+              <div
+                data-group="color"
+                class="mt-3 flex gap-2 *:size-8 *:rounded-full *:ring-offset-2 *:ring-offset-card *:transition *:hover:scale-110"
+              >
+                <button data-value="amber" title="amber" class="bg-amber-6"></button>
+                <button data-value="sky" title="sky" class="bg-sky-6"></button>
+                <button data-value="violet" title="violet" class="bg-violet-6"></button>
+                <button data-value="emerald" title="emerald" class="bg-emerald-6"></button>
+                <button data-value="rose" title="rose" class="bg-rose-6"></button>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class="text-xs font-semibold text-muted uppercase">Corners</legend>
+              <div
+                data-group="radius"
+                class="mt-3 inline-flex rounded-lg bg-well p-1 text-sm *:rounded-md *:px-3 *:py-1 *:transition"
+              >
+                <button data-value="rounded-md">md</button>
+                <button data-value="rounded-xl">xl</button>
+                <button data-value="rounded-full">full</button>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class="text-xs font-semibold text-muted uppercase">Size</legend>
+              <div
+                data-group="size"
+                class="mt-3 inline-flex rounded-lg bg-well p-1 text-sm *:rounded-md *:px-3 *:py-1 *:transition"
+              >
+                <button data-value="sm">sm</button>
+                <button data-value="md">md</button>
+                <button data-value="lg">lg</button>
+              </div>
+            </fieldset>
+            <label class="flex items-center gap-3 text-sm">
+              <input id="shadow" type="checkbox" checked class="size-4 accent-brand" />
+              A shadow in the button's color
+            </label>
+          </div>
+
+          <div class="flex flex-col">
+            <div class="grid min-h-48 flex-1 place-items-center p-8">
+              <button id="demo-button">Install Kbach</button>
+            </div>
+            <div
+              class="flex items-start gap-3 border-t border-line bg-code p-4 font-mono text-[13px] leading-6 text-muted"
+            >
+              <code id="demo-code" class="min-w-0 flex-1"></code>
+              <button
+                id="demo-copy"
+                class="rounded-md bg-ink/10 px-2 py-0.5 font-sans text-xs font-semibold text-ink hover:bg-ink/20"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- numbers that count up the first time they're seen -->
+      <section
+        data-reveal
+        class="mx-auto mt-24 grid max-w-5xl grid-cols-2 gap-6 text-center lg:grid-cols-4"
+      >
+        <div>
+          <p data-count="26" class="text-4xl font-bold tabular-nums">26</p>
+          <p class="text-sm text-muted">color families</p>
+        </div>
+        <div>
+          <p data-count="12" class="text-4xl font-bold tabular-nums">12</p>
+          <p class="text-sm text-muted">shades in each</p>
+        </div>
+        <div>
+          <p data-count="3" class="text-4xl font-bold tabular-nums">3</p>
+          <p class="text-sm text-muted">platforms: web, iOS, Android</p>
+        </div>
+        <div>
+          <p data-count="1" class="text-4xl font-bold tabular-nums">1</p>
+          <p class="text-sm text-muted">Rust engine under them</p>
+        </div>
+      </section>
+
+      <!-- features: a soft light follows the pointer across each card -->
+      <section
+        id="features"
+        data-reveal
+        class="mx-auto mt-24 grid max-w-5xl scroll-mt-24 gap-4 sm:grid-cols-3"
+      >
+        <div
+          data-spotlight="245, 158, 11"
+          class="group relative overflow-hidden rounded-2xl border border-line bg-card/60 p-5 transition hover:border-brand/40"
+        >
+          <div class="relative">
+            <div class="grid size-10 place-items-center rounded-xl bg-brand/10 text-accent">
+              <svg viewBox="0 0 24 24" class="size-5 fill-none stroke-current stroke-2">
+                <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
+              </svg>
+            </div>
+            <h3 class="mt-4 font-semibold">Build time on the web</h3>
+            <p class="mt-1 text-sm text-muted">A Vite or PostCSS plugin writes a real kbach.css.</p>
+          </div>
+        </div>
+        <div
+          data-spotlight="14, 165, 233"
+          class="group relative overflow-hidden rounded-2xl border border-line bg-card/60 p-5 transition hover:border-sky-6/40"
+        >
+          <div class="relative">
+            <div
+              class="grid size-10 place-items-center rounded-xl bg-sky-6/10 text-sky-7 dark:text-sky-4"
+            >
+              <svg viewBox="0 0 24 24" class="size-5 fill-none stroke-current stroke-2">
+                <rect x="6" y="2" width="12" height="20" rx="2.5" />
+                <path d="M11 18h2" />
+              </svg>
+            </div>
+            <h3 class="mt-4 font-semibold">Native styles</h3>
+            <p class="mt-1 text-sm text-muted">
+              The same names become style objects on Android and iOS.
+            </p>
+          </div>
+        </div>
+        <div
+          data-spotlight="139, 92, 246"
+          class="group relative overflow-hidden rounded-2xl border border-line bg-card/60 p-5 transition hover:border-violet-6/40"
+        >
+          <div class="relative">
+            <div
+              class="grid size-10 place-items-center rounded-xl bg-violet-6/10 text-violet-7 dark:text-violet-4"
+            >
+              <svg viewBox="0 0 24 24" class="size-5 fill-none stroke-current stroke-2">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+              </svg>
+            </div>
+            <h3 class="mt-4 font-semibold">Dark mode built in</h3>
+            <p class="mt-1 text-sm text-muted">
+              Colors in kbach.config.js follow the mode. Try the moon button above the preview.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer
+        class="mx-auto mt-24 flex max-w-5xl flex-col items-center justify-between gap-4 border-t border-line pt-8 text-sm text-muted sm:flex-row"
+      >
+        <p>
+          Change a class in index.html, or a color in kbach.config.js: the page updates as you type.
+        </p>
+        <a href="#top" class="shrink-0 hover:text-ink">Back to top ↑</a>
+      </footer>
+    </div>
+  </body>
+</html>

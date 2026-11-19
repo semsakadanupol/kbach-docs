@@ -1,0 +1,129 @@
+/*
+ * The playground's code editor, as VS Code draws it: Light Modern (with the
+ * Light+ token colors) in light mode, Dark+ in dark. KbachEditor's CodeMirror
+ * theme and the chrome around it (tabs, buttons, the shortcut sheet, the
+ * loading outline) use these, as var(--ed-…) and bg-(--ed-…) classes.
+ */
+:root {
+  --ed-bg: #ffffff;
+  --ed-fg: #3b3b3b;
+  --ed-border: #e5e5e5;
+  /* the tab bar, a tab that isn't open, and its text */
+  --ed-tabs: #f8f8f8;
+  --ed-tab: #f8f8f8;
+  --ed-tab-fg: #868686;
+  --ed-tab-on-fg: #1f1f1f;
+  /* the bar's buttons */
+  --ed-icon: #616161;
+  --ed-icon-hover: #1f1f1f;
+  --ed-hover: rgba(0, 0, 0, 0.06);
+  --ed-muted: #6e7681;
+  /* the outline while it loads */
+  --ed-skeleton: rgba(0, 0, 0, 0.08);
+
+  --ed-cursor: #000000;
+  --ed-selection: #add6ff;
+  --ed-selection-match: rgba(173, 214, 255, 0.5);
+  --ed-line: #eeeeee;
+  --ed-gutter: #6e7681;
+  --ed-gutter-on: #171184;
+  --ed-fold: #424242;
+  --ed-bracket: #b9b9b9;
+  --ed-fold-mark: rgba(0, 0, 0, 0.06);
+  /* tooltips, panels, the completion list */
+  --ed-widget: #f8f8f8;
+  --ed-widget-border: #c8c8c8;
+  --ed-widget-fg: #3b3b3b;
+  --ed-shadow: rgba(0, 0, 0, 0.16);
+  --ed-pick: #e8e8e8;
+  --ed-pick-fg: #000000;
+  --ed-match: #0066bf;
+  --ed-css: #0b7a6f;
+  --ed-keys: #8a6100;
+  --ed-field: rgba(0, 0, 0, 0.04);
+  --ed-thumb: rgba(100, 100, 100, 0.25);
+  --ed-thumb-hover: rgba(100, 100, 100, 0.4);
+  --ed-warn: #bf8803;
+  --ed-error-line: rgba(229, 20, 0, 0.06);
+  --ed-error: #c72e0f;
+  --ed-swatch-ring: rgba(0, 0, 0, 0.2);
+  --ed-emmet: #1a85b0;
+
+  /* tokens: VS Code's Light+ */
+  --ed-tag: #800000;
+  --ed-bracket-angle: #800000;
+  --ed-punct: #3b3b3b;
+  --ed-attr: #e50000;
+  --ed-attr-value: #0000ff;
+  --ed-string: #a31515;
+  --ed-comment: #008000;
+  --ed-control: #af00db;
+  --ed-keyword: #0000ff;
+  --ed-number: #098658;
+  --ed-property: #001080;
+  --ed-function: #795e26;
+  --ed-type: #267f99;
+  --ed-variable: #001080;
+  --ed-regexp: #811f3f;
+  --ed-invalid: #cd3131;
+}
+
+:root.dark {
+  --ed-bg: #1e1e1e;
+  --ed-fg: #d4d4d4;
+  --ed-border: #2b2b2b;
+  --ed-tabs: #252526;
+  --ed-tab: #2d2d2d;
+  --ed-tab-fg: #969696;
+  --ed-tab-on-fg: #ffffff;
+  --ed-icon: #9aa8ae;
+  --ed-icon-hover: #ece6d8;
+  --ed-hover: rgba(255, 255, 255, 0.1);
+  --ed-muted: #7f9198;
+  --ed-skeleton: rgba(255, 255, 255, 0.1);
+
+  --ed-cursor: #aeafad;
+  --ed-selection: #264f78;
+  --ed-selection-match: rgba(173, 214, 255, 0.15);
+  --ed-line: #282828;
+  --ed-gutter: #858585;
+  --ed-gutter-on: #c6c6c6;
+  --ed-fold: #c5c5c5;
+  --ed-bracket: #888888;
+  --ed-fold-mark: rgba(255, 255, 255, 0.08);
+  --ed-widget: #252526;
+  --ed-widget-border: #454545;
+  --ed-widget-fg: #cccccc;
+  --ed-shadow: rgba(0, 0, 0, 0.35);
+  --ed-pick: #04395e;
+  --ed-pick-fg: #ffffff;
+  --ed-match: #2aaaff;
+  --ed-css: #9fd3c7;
+  --ed-keys: #e2c27f;
+  --ed-field: rgba(255, 255, 255, 0.06);
+  --ed-thumb: rgba(255, 255, 255, 0.16);
+  --ed-thumb-hover: rgba(255, 255, 255, 0.28);
+  --ed-warn: #cca700;
+  --ed-error-line: rgba(238, 159, 159, 0.09);
+  --ed-error: #ee9f9f;
+  --ed-swatch-ring: rgba(255, 255, 255, 0.25);
+  --ed-emmet: #8fc7d9;
+
+  /* tokens: VS Code's Dark+ */
+  --ed-tag: #569cd6;
+  --ed-bracket-angle: #808080;
+  --ed-punct: #d4d4d4;
+  --ed-attr: #9cdcfe;
+  --ed-attr-value: #ce9178;
+  --ed-string: #ce9178;
+  --ed-comment: #6a9955;
+  --ed-control: #c586c0;
+  --ed-keyword: #569cd6;
+  --ed-number: #b5cea8;
+  --ed-property: #9cdcfe;
+  --ed-function: #dcdcaa;
+  --ed-type: #4ec9b0;
+  --ed-variable: #9cdcfe;
+  --ed-regexp: #d16969;
+  --ed-invalid: #f44747;
+}

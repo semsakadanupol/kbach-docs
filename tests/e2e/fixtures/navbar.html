@@ -1,0 +1,13 @@
+<!-- Navbar: links from md up -->
+<nav class="flex items-center justify-between rounded-xl bg-white p-4 shadow-sm dark:bg-gray-10">
+  <span class="font-bold text-gray-12 dark:text-white">Brand</span>
+  <div class="hidden items-center gap-6 text-sm md:flex">
+    <a href="#" class="text-gray-8 hover:text-gray-12">Docs</a>
+    <a href="#" class="text-gray-8 hover:text-gray-12">Blog</a>
+  </div>
+  <button id="menu" aria-expanded="false" aria-controls="panel" class="rounded-md px-3 py-1.5 text-sm md:hidden">Menu</button>
+</nav>
+<div id="panel" class="mt-2 rounded-xl bg-white p-4 opacity-0 transition-opacity md:hidden dark:bg-gray-10">
+  <a href="#" class="block py-1">Docs</a>
+  <a href="#" class="block py-1">Blog</a>
+</div>
