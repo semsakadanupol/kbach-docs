@@ -76,7 +76,7 @@ Script មិនដែលកែ attribute `class` របស់អ្នកទេ
 URL ខ្លីតែងតែផ្តល់ release ថ្មីបំផុត។ បើមិនចង់ឱ្យគេហទំព័រប្តូរដោយខ្លួនឯង សូមដាក់លេខ version ក្នុង URL៖
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0-beta.9"></script>
+<script src="https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0-beta.10"></script>
 ```
 
 ឯកសារដដែលក៏មាននៅលើ unpkg ដែរ៖ `https://unpkg.com/@kbach/browser`។
