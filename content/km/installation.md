@@ -244,7 +244,7 @@ export default function App() {
 ឯកសារដដែលនេះក៏មាននៅលើ unpkg ដែរ៖ `https://unpkg.com/@kbach/browser`។
 
 > [!TIP] ពេលដាក់ឱ្យប្រើពិត សូមកំណត់ version ឱ្យច្បាស់
-> URL ខ្លីតែងតែផ្តល់ release ថ្មីបំផុត។ បើចង់នៅតែមួយ version សូមដាក់លេខ version ក្នុង URL ឧទាហរណ៍ `https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0-beta.6`។ ក្រោយមាន release ថ្មី CDN អាចនៅតែផ្តល់ឯកសារចាស់តាម URL ខ្លីមួយរយៈទៀត។
+> URL ខ្លីតែងតែផ្តល់ release ថ្មីបំផុត។ បើចង់នៅតែមួយ version សូមដាក់លេខ version ក្នុង URL ឧទាហរណ៍ `https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0-beta.7`។ ក្រោយមាន release ថ្មី CDN អាចនៅតែផ្តល់ឯកសារចាស់តាម URL ខ្លីមួយរយៈទៀត។
 
 ## កំណត់ការប្រើប្រាស់ {#html-config}
 
