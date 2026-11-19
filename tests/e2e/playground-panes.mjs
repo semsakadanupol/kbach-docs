@@ -117,7 +117,7 @@ await p.waitForTimeout(400);
 check(!(await p.isVisible('[role="menu"][aria-label="More"] [role="menuitemradio"]')), 'wide: the layouts are not under ⋯ (the Layout button has them)');
 await pick('Code left');
 
-await p.screenshot({ path: 'tests/e2e/shots/playground-panes.png' });
+await p.screenshot({ path: 'shots/playground-panes.png' });
 check(errors.length === 0, 'no page errors ' + JSON.stringify(errors));
 await b.close();
 process.exit(failures ? 1 : 0);

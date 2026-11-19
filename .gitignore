@@ -41,5 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 # screenshots the end-to-end checks write
-/shots/
-/tests/e2e/shots/
+shots/

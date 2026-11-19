@@ -1,6 +1,6 @@
 // The home page (/en): what's on it, that what it shows is the engine's real output, that it fits
 // every width, and where its links go.
-import { chromium } from 'playwright';
+import { chromium, firefox } from 'playwright';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 let failures = 0;
@@ -600,6 +600,30 @@ for (const [lang, w, root] of [['en', 320, '16px'], ['km', 320, '16px'], ['en', 
   });
   check(m.outside.length === 0 && m.overlap.length === 0 && m.loose === 0, lang + ' ' + w + 'px, text ' + root + ': every label inside the map, none on another, every line on a label ' + JSON.stringify(m));
   await t.close();
+}
+
+// Each label is as wide as its text, in Firefox too: a label placed near the right edge (left: 80%) was
+// sized to the room left on its right, and Firefox squeezed it narrower than its text (React Native,
+// Expo and Plain HTML ran out past their borders). Chromium never showed it, so Firefox runs this.
+for (const engine of [chromium, firefox]) {
+  const fb = await engine.launch();
+  for (const [lang, w] of [['en', 390], ['en', 487], ['km', 390], ['en', 1440]]) {
+    const t = await fb.newPage({ viewport: { width: w, height: 900 } });
+    await t.goto(BASE + '/' + lang, { waitUntil: 'networkidle' });
+    await t.waitForTimeout(600);
+    const squeezed = await t.evaluate(() =>
+      [...document.querySelectorAll('[data-network] a')].flatMap((a) => {
+        const box = a.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(a);
+        const text = range.getBoundingClientRect();
+        return text.right > box.right + 0.5 || text.left < box.left - 0.5 || a.scrollWidth > a.clientWidth + 1 ? [a.textContent.trim() + ' ' + Math.round(box.width) + '/' + Math.round(text.width)] : [];
+      }),
+    );
+    check(squeezed.length === 0, engine.name() + ' ' + lang + ' ' + w + 'px: every map label as wide as its text ' + JSON.stringify(squeezed));
+    await t.close();
+  }
+  await fb.close();
 }
 
 // the contents, compact: each part shows its first 5 pages; "Show N more" shows the rest, "Show fewer" hides them again

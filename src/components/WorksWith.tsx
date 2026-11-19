@@ -19,6 +19,10 @@ import { BrandIcon, type Brand } from "./BrandIcon";
 // Each label's middle sits far enough from the edges for the label to fit
 // at a phone's width (a 358px box), and none touches another;
 // tests/e2e/home.mjs checks both.
+//
+// Every label is `w-max`: a box placed with `left: 80%` may otherwise be
+// sized to the 20% of the map left on its right, and Firefox then squeezes a
+// flex label narrower than its text, which runs out past its border.
 
 type PackageId = "react" | "native" | "browser";
 
@@ -202,7 +206,7 @@ export function WorksWith({ className }: { className?: string }) {
             data-key={"pkg:" + pk.id}
             style={at("pkg:" + pk.id, pk)}
             className={clsx(
-              "absolute -translate-x-1/2 -translate-y-1/2 rounded-md border px-2 py-0.5 font-mono text-[10.5px] whitespace-nowrap transition duration-300 focus-visible:outline-2 focus-visible:outline-gold sm:text-[11.5px]",
+              "absolute w-max -translate-x-1/2 -translate-y-1/2 rounded-md border px-2 py-0.5 font-mono text-[10.5px] whitespace-nowrap transition duration-300 focus-visible:outline-2 focus-visible:outline-gold sm:text-[11.5px]",
               packageLit(pk.id) ? "border-gold bg-gold/15 text-accent" : "border-line bg-page text-muted",
               active && !packageLit(pk.id) && "opacity-50",
             )}
@@ -223,7 +227,7 @@ export function WorksWith({ className }: { className?: string }) {
               data-key={"tool:" + x.name}
               style={at("tool:" + x.name, x)}
               className={clsx(
-                "absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap shadow-sm transition duration-300 focus-visible:outline-2 focus-visible:outline-gold sm:text-[13px]",
+                "absolute flex w-max -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap shadow-sm transition duration-300 focus-visible:outline-2 focus-visible:outline-gold sm:text-[13px]",
                 lit ? "scale-105 border-gold bg-card text-ink shadow-gold/20" : "border-line bg-card text-muted",
                 active && !lit && "opacity-50",
               )}
