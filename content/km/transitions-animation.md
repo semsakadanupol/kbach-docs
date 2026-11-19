@@ -72,7 +72,35 @@ Animation ស្រាប់ចំនួនបួន៖ `animate-spin` សម្
 
 ## Animation ផ្ទាល់ខ្លួន {#custom-animations}
 
-បើចង់បាន animation ផ្ទាល់ខ្លួន សូមកំណត់ `@keyframes` របស់វាក្នុង CSS រួចដាក់ឈ្មោះក្នុងតង្កៀបការ៉េ៖ `animate-[<value>]` កំណត់ `animation: <value>` ដោយប្រើ `_` ជំនួសដកឃ្លា។ ចំណែក `animate-(<custom-property>)` កំណត់ `animation: var(<custom-property>)` សម្រាប់ animation ដែលទុកក្នុង CSS variable។
+ដាក់ឈ្មោះ animation ផ្ទាល់ខ្លួនក្នុង `kbach.config.js` នៅក្រោម `extend`៖ `keyframes` ផ្ទុកជំហាននីមួយៗ ហើយ `animation` ផ្ទុកតម្លៃសម្រាប់ `animation` របស់ CSS។ ឈ្មោះនីមួយៗក្នុង `animation` ក្លាយជា class `animate-<name>` ហើយ class នោះនាំ `@keyframes` របស់វាមកជាមួយ ដូច្នេះមិនចាំបាច់សរសេរ CSS ទេ។
+
+```js title="kbach.config.js"
+export default {
+  extend: {
+    keyframes: {
+      wiggle: {
+        '0%, 100%': { transform: 'rotate(-3deg)' },
+        '50%': { transform: 'rotate(3deg)' },
+      },
+    },
+    animation: {
+      wiggle: 'wiggle 1s ease-in-out infinite',
+      'spin-slow': 'spin 3s linear infinite',
+    },
+  },
+};
+```
+
+```html
+<button class="animate-wiggle">Wiggle</button>
+<div class="animate-spin-slow"></div>
+```
+
+សរសេរ property ក្នុងជំហាននីមួយៗជា camelCase (`animationTimingFunction`) ឬជា kebab-case ក្នុងសញ្ញាសម្រង់ (`'animation-timing-function'`)។ Animation មួយអាចប្រើ keyframe របស់ animation ស្រាប់បាន ដូច `spin-slow` ខាងលើ។ ឈ្មោះក្នុង `animation` ជំនួស animation ស្រាប់ដែលមានឈ្មោះដូចគ្នា។ លើទំព័រ HTML ធម្មតា ដាក់ `keyframes` និង `animation` ដដែលនេះក្នុង `window.kbachConfig`។
+
+### ដោយមិនប្រើ config {#without-the-config}
+
+`animate-[<value>]` កំណត់ `animation: <value>` ដោយប្រើ `_` ជំនួសដកឃ្លា។ វាក៏នាំ keyframe ដែលវាដាក់ឈ្មោះមកជាមួយដែរ ទោះជារបស់អ្នកពី config ឬរបស់ animation ស្រាប់ ដូចក្នុង `animate-[spin_3s_linear_infinite]`។ ចំពោះ keyframe ក្នុងឯកសារ CSS ផ្ទាល់ខ្លួន class គ្រាន់តែដាក់ឈ្មោះវា ហើយឯកសាររបស់អ្នកជាអ្នកកំណត់វា។ ចំណែក `animate-(<custom-property>)` កំណត់ `animation: var(<custom-property>)` សម្រាប់ animation ដែលទុកក្នុង CSS variable។
 
 ::classes animate-[wiggle_1s_ease-in-out_infinite] animate-(--my-animation)
 
@@ -92,7 +120,7 @@ Animation ស្រាប់ចំនួនបួន៖ `animate-spin` សម្
 <button class="animate-(--my-animation)">Wiggle</button>
 ```
 
-ទាំងពីរប្រើជាមួយ variant បាន ដូចជា `hover:animate-[wiggle_1s_ease-in-out_infinite]`។ Keyframe ជា CSS ដូច្នេះប្រើបានតែលើ web ប៉ុណ្ណោះ៖ React Native មិនរត់ animation keyframe របស់ CSS ទេ។
+ទាំងអស់នេះប្រើជាមួយ variant បាន ដូចជា `hover:animate-wiggle` ឬ `hover:animate-[wiggle_1s_ease-in-out_infinite]`។ Keyframe ជា CSS ដូច្នេះប្រើបានតែលើ web ប៉ុណ្ណោះ៖ React Native មិនរត់ animation keyframe របស់ CSS ទេ។
 
 ## ចលនាតិច {#reduced-motion}
 

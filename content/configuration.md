@@ -1,7 +1,7 @@
 ---
 title: kbach.config.js
 nav: kbach.config.js
-description: One optional settings file at the root of your project. It adds your own colors, spacing, screen sizes and fonts, and every platform and the editor extension read it.
+description: One optional settings file at the root of your project. It adds your own colors, spacing, screen sizes, fonts and animations, and every platform and the editor extension read it.
 ---
 
 ## Where it goes
@@ -29,6 +29,8 @@ export default {
     screens: {},
     fontFamily: {},
     container: {},
+    keyframes: {}, // web only: see Transitions & Animation
+    animation: {},
   },
 };
 ```
@@ -41,7 +43,7 @@ Use `extend` to add to the built-in values. Your `brand` color joins the 26 colo
 
 Use `theme` to replace a section completely. `theme.colors` drops the whole built-in palette and leaves only your colors. That's useful for a strict design system, but you lose `bg-blue-6` and the rest.
 
-`theme` accepts `colors`, `spacing`, `screens` and `fontFamily`. `container` only goes under `extend`.
+`theme` accepts `colors`, `spacing`, `screens` and `fontFamily`. `container`, `keyframes` and `animation` only go under `extend`. For `keyframes` and `animation`, see [Custom animations](/transitions-animation#custom-animations).
 
 ## A complete example
 

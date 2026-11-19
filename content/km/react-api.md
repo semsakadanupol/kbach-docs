@@ -143,4 +143,4 @@ subscribeGlobalDarkMode(listener: () => void): () => void; // returns unsubscrib
 
 ## Types {#types}
 
-`KbachConfig`, `ThemeConfig`, `ColorEntry`, `ContainerConfig`, `DarkModeStrategy`, `ThemeState`, `ThemeProviderProps`, `ThemeMode`, `ColorsAPI`, `ColorScale`, `ClassValue`, `ClassDictionary` និង `ClassArray`។
+`KbachConfig`, `KeyframesSteps`, `ThemeConfig`, `ColorEntry`, `ContainerConfig`, `DarkModeStrategy`, `ThemeState`, `ThemeProviderProps`, `ThemeMode`, `ColorsAPI`, `ColorScale`, `ClassValue`, `ClassDictionary` និង `ClassArray`។

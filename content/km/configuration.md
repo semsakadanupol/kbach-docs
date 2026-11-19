@@ -1,7 +1,7 @@
 ---
 title: kbach.config.js
 nav: kbach.config.js
-description: ឯកសារការកំណត់មួយនៅឫស project ដែលមិនដាក់ក៏បាន។ វាបន្ថែមពណ៌ គម្លាត ទំហំអេក្រង់ និង font ផ្ទាល់ខ្លួន ហើយគ្រប់ platform និង editor extension សុទ្ធតែអានវា។
+description: ឯកសារការកំណត់មួយនៅឫស project ដែលមិនដាក់ក៏បាន។ វាបន្ថែមពណ៌ គម្លាត ទំហំអេក្រង់ font និង animation ផ្ទាល់ខ្លួន ហើយគ្រប់ platform និង editor extension សុទ្ធតែអានវា។
 ---
 
 ## ដាក់នៅឯណា {#where-it-goes}
@@ -29,6 +29,8 @@ export default {
     screens: {},
     fontFamily: {},
     container: {},
+    keyframes: {}, // web only: see Transitions & Animation
+    animation: {},
   },
 };
 ```
@@ -41,7 +43,7 @@ Comment `@type` ធ្វើឱ្យ editor ភាគច្រើនណែន�
 
 ប្រើ `theme` ដើម្បីជំនួសផ្នែកណាមួយទាំងស្រុង។ ឧទាហរណ៍ `theme.colors` លុបតារាងពណ៌ស្រាប់ចោលទាំងអស់ ហើយទុកតែពណ៌របស់អ្នក។ វាល្អសម្រាប់ design system ដែលតឹងរ៉ឹង តែអ្នកនឹងលែងមាន `bg-blue-6` និងពណ៌ផ្សេងៗទៀត។
 
-`theme` ទទួល `colors`, `spacing`, `screens` និង `fontFamily`។ ចំណែក `container` ដាក់បានតែក្នុង `extend` ប៉ុណ្ណោះ។
+`theme` ទទួល `colors`, `spacing`, `screens` និង `fontFamily`។ ចំណែក `container`, `keyframes` និង `animation` ដាក់បានតែក្នុង `extend` ប៉ុណ្ណោះ។ សម្រាប់ `keyframes` និង `animation` សូមមើល [Animation ផ្ទាល់ខ្លួន](/transitions-animation#custom-animations)។
 
 ## ឧទាហរណ៍ពេញលេញ {#a-complete-example}
 

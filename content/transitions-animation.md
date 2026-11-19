@@ -72,7 +72,35 @@ Four built-in animations: `animate-spin` for loaders, `animate-ping` for a radar
 
 ## Custom animations
 
-For an animation of your own, define its `@keyframes` in your CSS and name it in brackets: `animate-[<value>]` sets `animation: <value>`, with underscores for spaces. `animate-(<custom-property>)` sets `animation: var(<custom-property>)`, for an animation kept in a CSS variable.
+Name your own animations in `kbach.config.js`, under `extend`: `keyframes` holds the steps, and `animation` the value for CSS `animation`. Each name in `animation` becomes an `animate-<name>` class, and the class brings its `@keyframes` with it, so there's no CSS to write.
+
+```js title="kbach.config.js"
+export default {
+  extend: {
+    keyframes: {
+      wiggle: {
+        '0%, 100%': { transform: 'rotate(-3deg)' },
+        '50%': { transform: 'rotate(3deg)' },
+      },
+    },
+    animation: {
+      wiggle: 'wiggle 1s ease-in-out infinite',
+      'spin-slow': 'spin 3s linear infinite',
+    },
+  },
+};
+```
+
+```html
+<button class="animate-wiggle">Wiggle</button>
+<div class="animate-spin-slow"></div>
+```
+
+Write a step's properties in camelCase (`animationTimingFunction`) or as quoted kebab-case (`'animation-timing-function'`). An animation can use a built-in's keyframes, like `spin-slow` above. A name in `animation` replaces the built-in one of the same name. On a plain HTML page, the same `keyframes` and `animation` go in `window.kbachConfig`.
+
+### Without the config
+
+`animate-[<value>]` sets `animation: <value>`, with underscores for spaces. It brings the keyframes it names too, yours from the config or a built-in's, as in `animate-[spin_3s_linear_infinite]`. For keyframes in your own CSS file, the class names them and your file defines them. `animate-(<custom-property>)` sets `animation: var(<custom-property>)`, for an animation kept in a CSS variable.
 
 ::classes animate-[wiggle_1s_ease-in-out_infinite] animate-(--my-animation)
 
@@ -92,7 +120,7 @@ For an animation of your own, define its `@keyframes` in your CSS and name it in
 <button class="animate-(--my-animation)">Wiggle</button>
 ```
 
-Both work with variants, like `hover:animate-[wiggle_1s_ease-in-out_infinite]`. Keyframes are CSS, so these are for the web: React Native doesn't run CSS keyframe animations.
+All of these work with variants, like `hover:animate-wiggle` or `hover:animate-[wiggle_1s_ease-in-out_infinite]`. Keyframes are CSS, so these are for the web: React Native doesn't run CSS keyframe animations.
 
 ## Reduced motion
 
