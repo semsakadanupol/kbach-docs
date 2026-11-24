@@ -76,7 +76,7 @@ With `darkMode: 'class'` (or `'attribute'`) in your settings:
 The short URL always gives the newest release. For a site you don't want to change by itself, put the version in the URL:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0-beta.10"></script>
+<script src="https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0-beta.11"></script>
 ```
 
 The same files are on unpkg: `https://unpkg.com/@kbach/browser`.
