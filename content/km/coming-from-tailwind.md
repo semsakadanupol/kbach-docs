@@ -22,6 +22,7 @@ description: ឈ្មោះ class របស់ Kbach យកតាម Tailwind C
 
 - គ្មាន `@import "tailwindcss"` ទេ។ Build plugin សរសេរ `kbach.css` ឱ្យ ហើយអ្នក import ឯកសារនោះតែម្តង (មើលនៅ [ការដំឡើង](/installation))។
 - ការកំណត់ដាក់ក្នុងឯកសារ JavaScript គឺ [kbach.config.js](/configuration) ដែលមានផ្នែក `theme` និង `extend`។ គ្មានប្លុក `@theme` ក្នុង CSS ទេ។
+- Animation ផ្ទាល់ខ្លួនដាក់ក្នុង `extend.keyframes` និង `extend.animation` នៃឯកសារនោះ ជំនួសឱ្យ `@keyframes` និង `--animate-*` ក្នុង `@theme`។ សូមមើល [Animation ផ្ទាល់ខ្លួន](/transitions-animation#custom-animations)។
 - គ្មាន `@apply` ទេ។ បើចង់ប្រើ class មួយក្រុមម្តងទៀត សូមដាក់វាក្នុង component ឬក្នុង variable ដែលរុំដោយ `clsx()`។
 
 ## ឈ្មោះ {#naming}

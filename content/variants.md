@@ -17,6 +17,35 @@ You can chain variants. Each one is another condition, and all of them must be t
 
 `hover:` applies only on a device that can hover. On a touch screen a tap would otherwise leave the hover style stuck until the next tap. The same goes for `group-hover:` and `peer-hover:`.
 
+## When two classes set the same thing {#which-class-wins}
+
+The order you write classes in doesn't matter. A class with a variant wins over the same class without one, and between two variants, the one further down this list wins:
+
+1. No variant
+2. Position among siblings: `first:`, `last:`, `odd:`, `even:`, `nth-*`
+3. `open:` and `inert:`
+4. `hover:`, `focus:`, `focus-visible:`, `focus-within:`, `active:`, then the form states and `aria-*`
+5. `has-*`, `not-*`, `data-*`, `before:`, `after:` and the other pseudo-elements, `*:`
+6. `group-*`, `peer-*` and `in-*`
+7. `dark:`
+8. `motion-safe:`, `motion-reduce:`, `print:` and the other media queries
+9. Screen sizes, smallest first, then `max-*`, container queries and `supports-*`
+10. `starting:`
+
+A class with several variants takes the place of the one furthest down the list. When two classes are at the same place, their next variant decides: `dark:active:bg-blue-8` wins over `dark:hover:bg-blue-7` while the button is pressed, just as `active:` wins over `hover:`.
+
+This matters most for `motion-safe:`, which sits low in the list:
+
+```html
+<!-- motion-safe: sits lower than active:, so the spin keeps going while pressed -->
+<button class="motion-safe:hover:animate-spin active:animate-none">Save</button>
+
+<!-- with the same motion-safe:, active: wins and the spin stops -->
+<button class="motion-safe:hover:animate-spin motion-safe:active:animate-none">Save</button>
+```
+
+`disabled:` always wins over the other states, and a class marked `!` (see [Making a class win](/utility-classes#important)) wins over all of them.
+
 ## States {#states}
 
 ```preview

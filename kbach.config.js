@@ -47,5 +47,17 @@ module.exports = {
       'snippet-ink': { light: '#26303a', dark: '#e3ded1' },
       'snippet-muted': { light: '#76828a', dark: '#7f9198' },
     },
+    // The live example under "Custom animations" (content/transitions-animation.md),
+    // the same config that page shows.
+    keyframes: {
+      wiggle: {
+        '0%, 100%': { transform: 'rotate(-3deg)' },
+        '50%': { transform: 'rotate(3deg)' },
+      },
+    },
+    animation: {
+      wiggle: 'wiggle 1s ease-in-out infinite',
+      'spin-slow': 'spin 3s linear infinite',
+    },
   },
 };

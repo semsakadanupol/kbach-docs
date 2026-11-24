@@ -96,7 +96,24 @@ export default {
 <div class="animate-spin-slow"></div>
 ```
 
+```preview
+<div class="flex flex-wrap items-center gap-10">
+  <button class="rounded-lg bg-sky-6 px-4 py-2 font-semibold text-white motion-safe:animate-wiggle">animate-wiggle</button>
+  <svg viewBox="0 0 24 24" fill="none" class="size-8 text-sky-6 motion-safe:animate-spin-slow"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+</div>
+```
+
 សរសេរ property ក្នុងជំហាននីមួយៗជា camelCase (`animationTimingFunction`) ឬជា kebab-case ក្នុងសញ្ញាសម្រង់ (`'animation-timing-function'`)។ Animation មួយអាចប្រើ keyframe របស់ animation ស្រាប់បាន ដូច `spin-slow` ខាងលើ។ ឈ្មោះក្នុង `animation` ជំនួស animation ស្រាប់ដែលមានឈ្មោះដូចគ្នា។ លើទំព័រ HTML ធម្មតា ដាក់ `keyframes` និង `animation` ដដែលនេះក្នុង `window.kbachConfig`។
+
+ដើម្បីរត់ keyframe ច្រើនក្នុងពេលតែមួយ សូមបំបែកវាដោយសញ្ញាក្បៀស ដូចក្នុង CSS។ អាចលាយរបស់អ្នក ជាមួយរបស់ដែលមានស្រាប់បាន៖
+
+```js title="kbach.config.js"
+animation: {
+  'wiggle-pulse': 'wiggle 1s ease-in-out infinite, pulse 2s infinite',
+},
+```
+
+ពេល keyframe ពីរប្តូរ property ដូចគ្នា ដូចជា `transform` ក្នុង `wiggle` និង `bounce` keyframe ដែលនៅចុងក្រោយក្នុងបញ្ជីឈ្នះ។
 
 ### ដោយមិនប្រើ config {#without-the-config}
 
@@ -129,3 +146,5 @@ export default {
 ```preview
 <svg viewBox="0 0 24 24" fill="none" class="size-8 text-sky-6 motion-safe:animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
 ```
+
+ដើម្បីបញ្ឈប់ animation ដែលមាន `motion-safe:` សូមដាក់ `motion-safe:` លើ class ដែលបញ្ឈប់វាដែរ៖ `motion-safe:hover:animate-spin motion-safe:active:animate-none`។ `active:animate-none` ធម្មតាចាញ់វា។ សូមមើល [ពេល class ពីរកំណត់របស់ដូចគ្នា](/variants#which-class-wins)។

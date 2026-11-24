@@ -36,7 +36,8 @@ Kbach rules. Follow them in every class you write.
    Gradients: bg-linear-to-r from-* via-* to-*.
 4. There is no tailwind.config.js, no @tailwind, no @import "tailwindcss",
    no @theme and no @apply. Settings go in kbach.config.js
-   (export default { darkMode, theme, extend }).
+   (export default { darkMode, theme, extend }). Custom animations go in
+   extend.keyframes and extend.animation and are used as animate-<name>.
 5. Plain HTML page: put <script>window.kbachConfig = { ... }</script> BEFORE
    <script src="https://cdn.jsdelivr.net/npm/@kbach/browser"></script>.
    A theme button calls Kbach.toggle() and needs darkMode: 'class' or

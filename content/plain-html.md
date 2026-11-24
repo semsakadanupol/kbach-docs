@@ -33,6 +33,7 @@ It never changes your `class` attributes, and it skips class names it doesn't kn
 ## Things to know {#things-to-know}
 
 - **A short moment without styles.** The page is styled once the engine has loaded, so on the first visit it can show briefly without styles. For a site where that matters, use React with the [build plugin](/web), which makes the CSS file ahead of time.
+- **No transitions while the page is styled.** Transitions are off until the first styles are in, so buttons don't fade in from the browser's own look on every load. Animations (`animate-*`) start right away. `starting:` plays only for elements added after the page has loaded.
 - **No typo warnings.** A class name the engine doesn't know is skipped quietly, because it may belong to other CSS. See [Check your page](#check-your-page).
 - **Open the page through a web server.** A page opened straight from disk (`file://`) can't load the `.wasm` file. Any local server works, such as `npx serve`.
 

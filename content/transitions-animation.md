@@ -96,7 +96,24 @@ export default {
 <div class="animate-spin-slow"></div>
 ```
 
+```preview
+<div class="flex flex-wrap items-center gap-10">
+  <button class="rounded-lg bg-sky-6 px-4 py-2 font-semibold text-white motion-safe:animate-wiggle">animate-wiggle</button>
+  <svg viewBox="0 0 24 24" fill="none" class="size-8 text-sky-6 motion-safe:animate-spin-slow"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+</div>
+```
+
 Write a step's properties in camelCase (`animationTimingFunction`) or as quoted kebab-case (`'animation-timing-function'`). An animation can use a built-in's keyframes, like `spin-slow` above. A name in `animation` replaces the built-in one of the same name. On a plain HTML page, the same `keyframes` and `animation` go in `window.kbachConfig`.
+
+To run several keyframes at once, separate them with commas, as in CSS. Yours and the built-ins mix:
+
+```js title="kbach.config.js"
+animation: {
+  'wiggle-pulse': 'wiggle 1s ease-in-out infinite, pulse 2s infinite',
+},
+```
+
+When two of them animate the same property, such as `transform` in both `wiggle` and `bounce`, the last one in the list wins.
 
 ### Without the config
 
@@ -129,3 +146,5 @@ Put `motion-safe:` in front of an animation to run it only for people who haven'
 ```preview
 <svg viewBox="0 0 24 24" fill="none" class="size-8 text-sky-6 motion-safe:animate-spin"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 0 1 8-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
 ```
+
+To stop an animation that has `motion-safe:`, give the class that stops it `motion-safe:` too: `motion-safe:hover:animate-spin motion-safe:active:animate-none`. A plain `active:animate-none` loses to it. See [When two classes set the same thing](/variants#which-class-wins).

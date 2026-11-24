@@ -17,6 +17,35 @@ description: ធ្វើឱ្យ class ប្រើតែនៅពេលជា
 
 `hover:` ប្រើតែលើឧបករណ៍ដែលអាច hover បានប៉ុណ្ណោះ។ បើមិនដូច្នេះទេ លើអេក្រង់ប៉ះ ការប៉ះម្តងនឹងធ្វើឱ្យ style hover ជាប់គាំង រហូតដល់ប៉ះម្តងទៀត។ `group-hover:` និង `peer-hover:` ក៏ដូចគ្នា។
 
+## ពេល class ពីរកំណត់របស់ដូចគ្នា {#which-class-wins}
+
+លំដាប់ដែលអ្នកសរសេរ class មិនសំខាន់ទេ។ Class ដែលមាន variant ឈ្នះ class ដូចគ្នាដែលគ្មាន variant ហើយរវាង variant ពីរ variant ដែលនៅខាងក្រោមជាងក្នុងបញ្ជីនេះឈ្នះ៖
+
+1. គ្មាន variant
+2. ទីតាំងក្នុងចំណោម element ជិតខាង៖ `first:`, `last:`, `odd:`, `even:`, `nth-*`
+3. `open:` និង `inert:`
+4. `hover:`, `focus:`, `focus-visible:`, `focus-within:`, `active:` បន្ទាប់មកស្ថានភាព form និង `aria-*`
+5. `has-*`, `not-*`, `data-*`, `before:`, `after:` និង pseudo-element ផ្សេងៗ, `*:`
+6. `group-*`, `peer-*` និង `in-*`
+7. `dark:`
+8. `motion-safe:`, `motion-reduce:`, `print:` និង media query ផ្សេងៗ
+9. ទំហំអេក្រង់ ពីតូចទៅធំ បន្ទាប់មក `max-*`, container query និង `supports-*`
+10. `starting:`
+
+Class ដែលមាន variant ច្រើន យកកន្លែងរបស់ variant ដែលនៅខាងក្រោមបំផុតក្នុងបញ្ជី។ ពេល class ពីរនៅកន្លែងដូចគ្នា variant បន្ទាប់របស់វាជាអ្នកសម្រេច៖ `dark:active:bg-blue-8` ឈ្នះ `dark:hover:bg-blue-7` ពេលចុចប៊ូតុង ដូចដែល `active:` ឈ្នះ `hover:` ដែរ។
+
+រឿងនេះសំខាន់ជាងគេចំពោះ `motion-safe:` ព្រោះវានៅខាងក្រោមក្នុងបញ្ជី៖
+
+```html
+<!-- motion-safe: sits lower than active:, so the spin keeps going while pressed -->
+<button class="motion-safe:hover:animate-spin active:animate-none">Save</button>
+
+<!-- with the same motion-safe:, active: wins and the spin stops -->
+<button class="motion-safe:hover:animate-spin motion-safe:active:animate-none">Save</button>
+```
+
+`disabled:` ឈ្នះស្ថានភាពផ្សេងទៀតជានិច្ច ហើយ class ដែលមាន `!` (សូមមើល [ឱ្យ class មួយមានអាទិភាព](/utility-classes#important)) ឈ្នះទាំងអស់។
+
 ## ស្ថានភាព {#states}
 
 ```preview

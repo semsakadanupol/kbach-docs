@@ -22,6 +22,7 @@ Shade `6` sits roughly where `500` does, but the scale isn't a one-to-one renami
 
 - There's no `@import "tailwindcss"`. The build plugin writes `kbach.css` for you, and you import that file once (see [Installation](/installation)).
 - Settings go in a JavaScript file, [kbach.config.js](/configuration), with `theme` and `extend` sections. There's no `@theme` block in CSS.
+- Custom animations go in `extend.keyframes` and `extend.animation` in that file, instead of `@keyframes` and `--animate-*` inside `@theme`. See [Custom animations](/transitions-animation#custom-animations).
 - There's no `@apply`. To reuse a set of classes, put them in a component, or in a variable wrapped in `clsx()`.
 
 ## Naming {#naming}
