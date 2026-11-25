@@ -81,6 +81,20 @@ check(
 // the share picture needs the site's full address (KBACH_DOCS_URL): without it there's no picture tag, never a localhost one
 check(!/og:image/.test(html) && !/localhost/.test(html), 'without the site address, no og:image (and no localhost address)');
 check(existsSync(OUT + 'og.png') && existsSync(OUT + 'robots.txt'), 'og.png and robots.txt are in the build');
+
+// structured data (src/lib/structuredData.tsx): full addresses only, so none
+// without KBACH_DOCS_URL; with it (a production build, the same checks run on
+// it), the site's name on the home page and a breadcrumb on a docs page
+const jsonLd = (file) => [...readFileSync(OUT + file, 'utf-8').matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+const graph = (file) => jsonLd(file).flatMap((d) => d['@graph']);
+if (!/og:image/.test(html)) {
+  check(jsonLd('en.html').length === 0 && jsonLd('en/variants.html').length === 0, 'without the site address, no structured data');
+} else {
+  const site = graph('en.html').find((g) => g['@type'] === 'WebSite');
+  check(site?.name === 'Kbach' && /^https:\/\//.test(site.url), 'the home page names the site "Kbach" for search engines (' + site?.url + ')');
+  const crumbs = graph('km/variants.html').find((g) => g['@type'] === 'BreadcrumbList')?.itemListElement ?? [];
+  check(crumbs.length === 3 && crumbs[0].name === 'ឯកសារ Kbach' && crumbs[2].item.endsWith('/km/variants'), 'a Khmer docs page has its breadcrumb in Khmer, with full addresses');
+}
 check(/<meta name="robots" content="noindex/.test(readFileSync(OUT + '404.html', 'utf-8')), '404.html is kept out of search engines');
 
 // --- for AI assistants: the rules (from the "Using AI assistants" page) and every page

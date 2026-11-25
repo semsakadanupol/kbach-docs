@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LANGUAGE_KEY } from '../../lib/locale';
+import { JsonLd, siteJsonLd } from '../../lib/structuredData';
 
 // / → /en or /km, before anything shows: the language the reader used last
 // (components/site/Shell.tsx remembers it), else Khmer when the browser asks
@@ -21,6 +22,7 @@ export default function Start() {
   return (
     <>
       <meta httpEquiv="refresh" content="0; url=/en" />
+      <JsonLd data={siteJsonLd('en')} />
       <script dangerouslySetInnerHTML={{ __html: PICK }} />
       <p>
         <Link href="/en">Kbach docs in English</Link> · <Link href="/km" lang="km">ឯកសារ Kbach ជាភាសាខ្មែរ</Link>

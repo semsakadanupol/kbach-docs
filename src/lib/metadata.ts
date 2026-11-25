@@ -6,7 +6,7 @@ import { localHref, stripLocale, type Locale } from './locale';
 // and, when the site's address is known (KBACH_DOCS_URL), its canonical
 // address and its other-language version. Used by every page.tsx.
 
-const SITE_NAME: Record<Locale, string> = { en: 'Kbach Docs', km: 'ឯកសារ Kbach' };
+export const SITE_NAME: Record<Locale, string> = { en: 'Kbach Docs', km: 'ឯកសារ Kbach' };
 
 export function pageMetadata({ title, description, locale, path, noindex = false }: { title: string; description: string; locale: Locale; path: string; noindex?: boolean }): Metadata {
   const en = localHref(stripLocale(path), 'en');

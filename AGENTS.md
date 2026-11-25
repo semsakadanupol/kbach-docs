@@ -286,6 +286,18 @@ run inside the repo, uploads the whole `apps/kbach-docs` folder instead.
 Previews sit behind the team's Vercel login; production is public. The
 package `homepage` fields and the AI rules' last line point to this site.
 
+**Search engines.** With `KBACH_DOCS_URL` set, pages also carry schema.org
+JSON-LD (`src/lib/structuredData.tsx`, added 2026-11-25): `/`, `/en` and
+`/km` describe the site (`WebSite` named "Kbach", with "Kbach Docs" and
+"Kbach CSS" as other names, the `Organization` and its logo, and
+`SoftwareSourceCode`); each docs page has a `BreadcrumbList` (Kbach Docs ›
+section › page, in its language; a section links to its first page) and a
+`TechArticle` with its date. Moved pages and the playground have none.
+`tests/e2e/page-meta.mjs` checks both kinds of build. Search Console and
+Bing Webmaster Tools verification is a file in `public/` (Google's
+`google<id>.html`, Bing's `BingSiteAuth.xml`), served at the site's root;
+then submit `https://kbach.vercel.app/sitemap.xml` in each.
+
 `llms.txt` and `llms-full.txt` are for AI assistants (llmstxt.org). The
 rules in `llms.txt` are the first ` ```text ` block of
 `content/ai-assistants.md`, which is itself a copy of `AI_RULES` in

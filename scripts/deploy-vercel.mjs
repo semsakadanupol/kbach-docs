@@ -36,12 +36,26 @@ if (!existsSync(join(out, 'robots.txt')) || !readFileSync(join(out, 'robots.txt'
 const stage = mkdtempSync(join(tmpdir(), 'kbach-docs-deploy-'));
 cpSync(out, stage, { recursive: true });
 cpSync(join(root, '.vercel'), join(stage, '.vercel'), { recursive: true });
-// Serve the files as they are: no framework, no build. cleanUrls serves
-// /en/installation from en/installation.html, like scripts/serve.mjs, and a
-// missing page gets 404.html.
+// Serve the files as they are: no framework, no build. An address with no
+// dot in its last part (/en/installation) is served from that name plus
+// .html, like scripts/serve.mjs; files that exist are served first, and a
+// missing page gets 404.html. Not cleanUrls: it also redirects every .html
+// address (/googlec034efb1ead34943.html, Google Search Console's ownership
+// file in public/, has to be served as it is, not redirected).
 writeFileSync(
   join(stage, 'vercel.json'),
-  JSON.stringify({ framework: null, buildCommand: null, installCommand: null, outputDirectory: null, cleanUrls: true, trailingSlash: false }, null, 2),
+  JSON.stringify(
+    {
+      framework: null,
+      buildCommand: null,
+      installCommand: null,
+      outputDirectory: null,
+      trailingSlash: false,
+      rewrites: [{ source: '/:path((?:[^/]+/)*[^/.]+)', destination: '/:path.html' }],
+    },
+    null,
+    2,
+  ),
 );
 
 const args = ['--yes', VERCEL, 'deploy', '--yes', ...(process.argv.includes('--prod') ? ['--prod'] : [])];

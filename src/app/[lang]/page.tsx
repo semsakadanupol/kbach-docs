@@ -7,6 +7,6 @@ export async function generateMetadata({ params }: Props) {
   return homeMetadata(toLocale((await params).lang));
 }
 
-export default function Page() {
-  return <HomeRoute />;
+export default async function Page({ params }: Props) {
+  return <HomeRoute locale={toLocale((await params).lang)} />;
 }

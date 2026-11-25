@@ -7,6 +7,7 @@ import { HOME_META, docTitle, pageMetadata } from '../../lib/metadata';
 import { DocPageView } from '../../components/site/DocPageView';
 import { HomePage } from '../../components/site/HomePage';
 import { PlaygroundPage } from '../../components/site/PlaygroundPage';
+import { JsonLd, docJsonLd, siteJsonLd } from '../../lib/structuredData';
 
 // What each kind of page is, for both languages. The files in app/ are
 // small: each passes its language to one of these.
@@ -17,8 +18,13 @@ export function homeMetadata(locale: Locale): Metadata {
   return pageMetadata({ ...HOME_META[locale], locale, path: localHref('/', locale) });
 }
 
-export function HomeRoute() {
-  return <HomePage />;
+export function HomeRoute({ locale }: { locale: Locale }) {
+  return (
+    <>
+      <JsonLd data={siteJsonLd(locale)} />
+      <HomePage />
+    </>
+  );
 }
 
 // --- a docs page: /en/<slug> and /km/<slug>, one for every file in content/ ---
@@ -40,7 +46,12 @@ export function DocRoute({ slug, locale }: { slug: string; locale: Locale }) {
   const target = REDIRECTS[slug] ?? slug;
   const page = getPage(target, locale);
   if (!page) notFound();
-  return <DocPageView page={page} movedFrom={target !== slug ? slug : undefined} />;
+  return (
+    <>
+      {target === slug && <JsonLd data={docJsonLd(page)} />}
+      <DocPageView page={page} movedFrom={target !== slug ? slug : undefined} />
+    </>
+  );
 }
 
 // --- the playground: /en/playground and /km/playground ---

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # screenshots the end-to-end checks write
 shots/
+
+# turbo's cache
+.turbo
