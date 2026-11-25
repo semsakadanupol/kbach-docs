@@ -266,6 +266,26 @@ With it, every page also gets `canonical`, `og:url`, the share picture
 km, x-default), and `sitemap.xml` lists every page in both languages.
 Without it those are left out (the sitemap is empty).
 
+**Live site: https://kbach.vercel.app** (since 2026-11-25), the Vercel
+project `kbach` in the `cyclone-studio` team. Vercel only hosts the files:
+it can't build the site (no Rust/wasm-pack, no workspace build of
+`@kbach/react`), so the project is set to no framework, no build and no
+root directory, and it is **not** connected to the GitHub repository (a
+connected repo starts a failing build on every push; `vercel link`
+connects it by itself, so run `npx vercel git disconnect` after linking).
+To publish a change:
+
+```sh
+KBACH_DOCS_URL=https://kbach.vercel.app npm run build
+node scripts/deploy-vercel.mjs --prod     # leave out --prod for a preview
+```
+
+The script refuses an `out/` built without `KBACH_DOCS_URL`. It copies
+`out/` to a temp folder outside the repo before deploying, because the CLI,
+run inside the repo, uploads the whole `apps/kbach-docs` folder instead.
+Previews sit behind the team's Vercel login; production is public. The
+package `homepage` fields and the AI rules' last line point to this site.
+
 `llms.txt` and `llms-full.txt` are for AI assistants (llmstxt.org). The
 rules in `llms.txt` are the first ` ```text ` block of
 `content/ai-assistants.md`, which is itself a copy of `AI_RULES` in

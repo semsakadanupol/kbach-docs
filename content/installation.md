@@ -243,7 +243,7 @@ That's all. The script loads the engine (about 8 KB of JavaScript and 195 KB of 
 The same file is on unpkg: `https://unpkg.com/@kbach/browser`.
 
 > [!TIP] Pin a version in production
-> The short URL always serves the newest release. To stay on one version, put it in the URL, for example `https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0-beta.11`. After a release, the CDN can keep serving the old file under the short URL for a while.
+> The short URL always serves the newest release. To stay on one version, put it in the URL, for example `https://cdn.jsdelivr.net/npm/@kbach/browser@1.0.0`. After a release, the CDN can keep serving the old file under the short URL for a while.
 
 ## Configure it {#html-config}
 

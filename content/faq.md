@@ -14,7 +14,7 @@ No. These docs explain everything from the start. Begin with the [Quick start](/
 
 ## Is it ready to use? {#is-it-ready-to-use}
 
-Kbach is in beta: the packages are at version 1.0.0-beta, and details can still change from one release to the next. This site is built with Kbach. Use an exact version in your project, and upgrade on purpose.
+Yes. Kbach 1.0.0 is the first stable release, and it follows semantic versioning: a 1.x release adds and fixes things without breaking what already works, and a breaking change waits for 2.0. This site is built with Kbach.
 
 ## Is it free? {#is-it-free}
 

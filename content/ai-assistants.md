@@ -52,7 +52,7 @@ Kbach rules. Follow them in every class you write.
 8. Dark mode switches use useTheme() from '@kbach/react' or
    '@kbach/react-native': { mode, isDark, setMode, toggle }.
 
-Full documentation: https://github.com/semsakadanupol/kbach
+Full documentation: https://kbach.vercel.app
 ```
 
 The same rules are published with these docs as `/llms.txt`, the file AI tools look for on documentation sites, and the whole documentation as one text file at `/llms-full.txt`. When the docs site is online, you can give an assistant either address instead of pasting.
