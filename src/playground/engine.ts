@@ -5,8 +5,7 @@ import { getTheme, initKbach, type ThemeConfig } from '@kbach/react';
 // The Vite/PostCSS plugin's own code, so the playground's kbach.css is the
 // file a real project gets: the reset, :root (--kb-dark-mode, the color and
 // spacing variables), then the rules, in the same layout.
-import { formatKbachCSS, KBACH_END, KBACH_START } from '../../../../packages/react/src/vite-plugin/format';
-import { withColorVariables } from '../../../../packages/react/src/colorVariables';
+import { formatKbachCSS, KBACH_END, KBACH_START, withColorVariables } from '@kbach/react/tools';
 
 // The playground renders the reader's HTML in a sandboxed <iframe>, so its
 // stylesheet has to live in there too. Rather than copying rules out of the

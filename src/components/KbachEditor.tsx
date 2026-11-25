@@ -23,8 +23,7 @@ import { forceLinting, forEachDiagnostic, linter, openLintPanel, type Diagnostic
 import { indentWithTab } from '@codemirror/commands';
 import { tags as t } from '@lezer/highlight';
 import { abbreviationTracker, wrapWithAbbreviation, EmmetKnownSyntax } from '@emmetio/codemirror6-plugin';
-import { BASE_UTILITIES } from '../../../../packages/vscode-extension/src/generatedVocabulary';
-import { COLOR_PREFIXES } from '../../../../packages/vscode-extension/src/colorPrefixes';
+import { BASE_UTILITIES, COLOR_PREFIXES } from '@kbach/react/tools';
 import { colorForClass, cssForClass, engineLoaded, isKnownClass, playgroundThemeVersion, suggestFor, themeColorNames } from '../playground/engine';
 import { formatCode } from '../playground/format';
 import { documentParts, editableParts, skeletonKey } from '../playground/document';

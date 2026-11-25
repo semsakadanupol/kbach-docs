@@ -19,7 +19,7 @@ description: អ្វីៗទាំងអស់ដែល @kbach/react export �
 | `KbachReset` | component | Reset មូលដ្ឋាន សម្រាប់ការ render លើ server |
 | `getGlobalDarkMode`, `getGlobalThemeMode`, `setGlobalThemeMode`, `toggleGlobalDarkMode`, `subscribeGlobalDarkMode` | functions | Dark mode ក្រៅ React |
 
-Subpath export៖ `@kbach/react/vite`, `@kbach/react/postcss`, `@kbach/react/jsx-runtime` និង `@kbach/react/jsx-dev-runtime`។
+Subpath export៖ `@kbach/react/vite`, `@kbach/react/postcss`, `@kbach/react/jsx-runtime`, `@kbach/react/jsx-dev-runtime` និងសម្រាប់ឧបករណ៍ [`@kbach/react/tools`](#tools)។
 
 ## useTheme {#usetheme}
 
@@ -140,6 +140,22 @@ setGlobalThemeMode(mode): void;
 toggleGlobalDarkMode(): void;
 subscribeGlobalDarkMode(listener: () => void): () => void; // returns unsubscribe
 ```
+
+## សម្រាប់ឧបករណ៍៖ @kbach/react/tools {#tools}
+
+សម្រាប់ editor, playground និងឧបករណ៍ផ្សេងទៀតដែលបង្កើតលើ Kbach (ចាប់ពី 1.1.0)។ វាជាកូដដដែលដែល build plugin និង VS Code extension ប្រើ ដូច្នេះឧបករណ៍បង្ហាញ CSS ដូចគ្នា ហើយណែនាំ class ដូចគ្នា។ App ធម្មតាមិនត្រូវការវាទេ។
+
+```ts
+import { formatKbachCSS, withColorVariables, BASE_UTILITIES, COLOR_PREFIXES } from '@kbach/react/tools';
+
+formatKbachCSS(rules, theme): string;      // rules: Map<class, RuleEntry[]> from the engine
+withColorVariables(theme): ThemeConfig;    // colors as CSS variables, as the build gives the engine
+KBACH_START, KBACH_END                     // the markers around the generated block in a stylesheet
+MODIFIERS, BASE_UTILITIES: string[]        // class names for completion
+COLOR_PREFIXES: string[]                   // the utilities whose value is a color
+```
+
+Playground របស់គេហទំព័រនេះប្រើវាសម្រាប់ផ្ទាំង kbach.css និងការណែនាំ class។
 
 ## Types {#types}
 

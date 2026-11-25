@@ -1,17 +1,22 @@
-// Kbach's rules for AI assistants exist in one place, packages/cli/src/aiRules.ts,
-// and are copied into the docs page (and from there llms.txt), each package's
-// llms.txt and README. This fails when a copy is out of date: run
-// node scripts/sync-ai-rules.mjs from the repository root. (No browser.)
-import { execFileSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+// Kbach's rules for AI assistants come from the main repository
+// (packages/cli/src/aiRules.ts) and ship in every package's llms.txt. The
+// "Using AI assistants" page (and from it this site's llms.txt) keeps a copy:
+// it must match the rules in the installed @kbach/react's llms.txt, so after
+// a release that changes them, update node_modules (npm install) and copy
+// them into content/ai-assistants.md and content/km/ai-assistants.md. (No browser.)
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 
-const root = fileURLToPath(new URL('../../../../', import.meta.url));
-let ok = true;
-try {
-  const out = execFileSync(process.execPath, ['scripts/sync-ai-rules.mjs', '--check'], { cwd: root, encoding: 'utf-8' });
-  console.log('OK   ' + out.trim().split('\n').pop());
-} catch (e) {
-  ok = false;
-  console.log('FAIL ' + (e.stdout || e.message).trim().replace(/\n/g, '; '));
+const require = createRequire(import.meta.url);
+const llms = readFileSync(require.resolve('@kbach/react/package.json').replace(/package\.json$/, 'llms.txt'), 'utf-8').replace(/\r\n/g, '\n');
+const rules = llms.split('## Rules for AI assistants\n')[1]?.trim();
+const version = require('@kbach/react/package.json').version;
+let failures = 0;
+for (const file of ['content/ai-assistants.md', 'content/km/ai-assistants.md']) {
+  const md = readFileSync(new URL('../../' + file, import.meta.url), 'utf-8').replace(/\r\n/g, '\n');
+  const block = md.match(/^```text\n([\s\S]*?)^```/m)?.[1]?.trim();
+  const ok = !!rules && block === rules;
+  if (!ok) failures++;
+  console.log((ok ? 'OK   ' : 'FAIL ') + file + ' has the AI rules of @kbach/react ' + version + (ok ? '' : ' (copy them from node_modules/@kbach/react/llms.txt)'));
 }
-process.exit(ok ? 0 : 1);
+process.exit(failures ? 1 : 0);

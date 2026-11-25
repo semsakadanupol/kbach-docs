@@ -1,4 +1,4 @@
-// End-to-end check of the docs site (apps/kbach-docs) in real Chromium.
+// End-to-end check of the docs site (this repository, kbach-docs) in real Chromium.
 // Usage: node docs-e2e.mjs <base url> <screenshot dir> <playwright package dir>
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';

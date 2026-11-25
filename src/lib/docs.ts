@@ -60,4 +60,4 @@ export function hrefFor(slug: string, locale: Locale): string {
 }
 
 // Version shown in the header, read from the @kbach/react package in this repo.
-export { version as KBACH_VERSION } from '../../../../packages/react/package.json';
+export { version as KBACH_VERSION } from '@kbach/react/package.json';

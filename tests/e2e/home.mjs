@@ -51,12 +51,12 @@ check(missing.length === 0, 'every class on it has CSS' + (missing.length ? ': m
 }
 
 // What the page shows is real: the hero's class and its three outputs, the class read word by
-// word, the warning in the terminal, all checked against the engine (packages/core-engine) and
-// the build plugin's source. A page that tells readers what Kbach does must not make it up.
+// word, the warning in the terminal, all checked against the installed engine (@kbach/core-engine)
+// and build plugin (@kbach/react/vite). A page that tells readers what Kbach does must not make it up.
 {
   const require = createRequire(import.meta.url);
-  const engine = require('../../../../packages/core-engine/dist-node/kbach_core_engine.js');
-  const { defaultTheme } = require('../../../../packages/react/dist/index.js');
+  const engine = require('@kbach/core-engine/node');
+  const { defaultTheme } = require('@kbach/react');
   const theme = JSON.stringify(defaultTheme);
   const shown = await p.evaluate(() => ({
     cls: document.querySelector('[data-hero-class]').textContent,
@@ -88,11 +88,12 @@ check(missing.length === 0, 'every class on it has CSS' + (missing.length ? ': m
   const unknown = shown.words.filter((w) => !JSON.parse(engine.generate_css(w, theme)).rules.length);
   check(shown.words.length === 6 && unknown.length === 0, 'the class read word by word: six words the engine knows ' + JSON.stringify(shown.words) + (unknown.length ? ' unknown: ' + unknown : ''));
   // the terminal: the build plugin's own wording, and the engine's own suggestion
-  const source = readFileSync(new URL('../../../../packages/react/src/vite-plugin/unknownClassWarnings.ts', import.meta.url), 'utf-8');
+  // (the built plugin writes the two dashes as escapes: \u2014 and \u2013)
+  const source = readFileSync(require.resolve('@kbach/react/vite'), 'utf-8').replace(/\\u2014/g, '—').replace(/\\u2013/g, '–');
   check(
     shown.terminal.includes('Unknown class bg-blue-600 — did you mean bg-blue-7? Kbach color shades run 1–12, not 50–950.') &&
       engine.suggest_class('bg-blue-600', theme) === 'bg-blue-7' &&
-      source.includes("'Unknown class'") && source.includes("'— did you mean'") && source.includes("' Kbach color shades run 1–12, not 50–950.'"),
+      source.includes('"Unknown class"') && source.includes('"— did you mean"') && source.includes('" Kbach color shades run 1–12, not 50–950."'),
     'the terminal shows the plugin’s real warning, with the engine’s real suggestion',
   );
   check(shown.swatches === 26 * 12, 'the palette strip has every family and shade, each with its color (' + shown.swatches + ')');

@@ -23,12 +23,15 @@ function pageDates(): Record<string, string> {
   if (dates) return dates;
   dates = {};
   try {
-    const log = execFileSync('git', ['log', '--format=@%cI', '--name-only', '--', '.'], { cwd: CONTENT, encoding: 'utf8', maxBuffer: 64 << 20 });
+    // --relative: paths relative to content/, wherever the repository's root is
+    // (it was the Kbach monorepo until 2026-11-25). On Vercel, VERCEL_DEEP_CLONE
+    // gives the build the whole history; a shallow clone would date old pages today.
+    const log = execFileSync('git', ['log', '--format=@%cI', '--name-only', '--relative', '--', '.'], { cwd: CONTENT, encoding: 'utf8', maxBuffer: 64 << 20 });
     let date = '';
     for (const line of log.split('\n')) {
       if (line.startsWith('@')) date = line.slice(1).trim();
-      else if (line.startsWith('apps/kbach-docs/content/') && line.endsWith('.md')) {
-        const key = line.slice('apps/kbach-docs/content/'.length, -3);
+      else if (line.endsWith('.md')) {
+        const key = line.trim().slice(0, -3);
         if (!(key in dates)) dates[key] = date;
       }
     }

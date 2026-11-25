@@ -13,7 +13,7 @@ const check = (ok, msg) => {
   if (!ok) failures++;
 };
 const BASE = 'http://localhost:5176';
-const REPO = 'https://github.com/semsakadanupol/kbach';
+const REPO = 'https://github.com/semsakadanupol/kbach-docs'; // the docs' own repository
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
@@ -35,7 +35,7 @@ const metaOf = () =>
 await p.goto(BASE + '/en/installation', { waitUntil: 'networkidle' });
 await p.waitForTimeout(400);
 let r = await metaOf();
-check(r.edit === REPO + '/edit/main/apps/kbach-docs/content/installation.md', '"Edit this page" opens its Markdown file on GitHub (' + r.edit + ')');
+check(r.edit === REPO + '/edit/main/content/installation.md', '"Edit this page" opens its Markdown file on GitHub (' + r.edit + ')');
 check(!!r.issue && decodeURIComponent(r.issue).includes('title=Docs: Installation'), '"Report an issue" starts an issue named after the page');
 check(!!r.date && !isNaN(Date.parse(r.date)) && /^[A-Z][a-z]+ \d{1,2}, 20\d\d$/.test(r.shown ?? ''), '"Last updated" shows a date: ' + r.shown);
 
@@ -43,7 +43,7 @@ check(!!r.date && !isNaN(Date.parse(r.date)) && /^[A-Z][a-z]+ \d{1,2}, 20\d\d$/.
 await p.goto(BASE + '/km/installation', { waitUntil: 'networkidle' });
 await p.waitForTimeout(400);
 r = await metaOf();
-check(r.edit === REPO + '/edit/main/apps/kbach-docs/content/km/installation.md', 'in Khmer, "Edit this page" opens the Khmer file (' + r.edit + ')');
+check(r.edit === REPO + '/edit/main/content/km/installation.md', 'in Khmer, "Edit this page" opens the Khmer file (' + r.edit + ')');
 check(/^\d{1,2} [ក-៿]+ 20\d\d$/.test(r.shown ?? ''), 'in Khmer, the date has a Khmer month: ' + r.shown);
 
 // --- the footer

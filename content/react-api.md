@@ -19,7 +19,7 @@ description: Everything @kbach/react exports, grouped by what you use it for.
 | `KbachReset` | component | The base reset, for server rendering |
 | `getGlobalDarkMode`, `getGlobalThemeMode`, `setGlobalThemeMode`, `toggleGlobalDarkMode`, `subscribeGlobalDarkMode` | functions | Dark mode outside React |
 
-Subpath exports: `@kbach/react/vite`, `@kbach/react/postcss`, `@kbach/react/jsx-runtime` and `@kbach/react/jsx-dev-runtime`.
+Subpath exports: `@kbach/react/vite`, `@kbach/react/postcss`, `@kbach/react/jsx-runtime`, `@kbach/react/jsx-dev-runtime` and, for tools, [`@kbach/react/tools`](#tools).
 
 ## useTheme
 
@@ -140,6 +140,22 @@ setGlobalThemeMode(mode): void;
 toggleGlobalDarkMode(): void;
 subscribeGlobalDarkMode(listener: () => void): () => void; // returns unsubscribe
 ```
+
+## For tools: @kbach/react/tools {#tools}
+
+For editors, playgrounds and other tools built on Kbach (since 1.1.0). It is the code the build plugin and the VS Code extension run, so a tool shows the same CSS and suggests the same classes. An app doesn't need it.
+
+```ts
+import { formatKbachCSS, withColorVariables, BASE_UTILITIES, COLOR_PREFIXES } from '@kbach/react/tools';
+
+formatKbachCSS(rules, theme): string;      // rules: Map<class, RuleEntry[]> from the engine
+withColorVariables(theme): ThemeConfig;    // colors as CSS variables, as the build gives the engine
+KBACH_START, KBACH_END                     // the markers around the generated block in a stylesheet
+MODIFIERS, BASE_UTILITIES: string[]        // class names for completion
+COLOR_PREFIXES: string[]                   // the utilities whose value is a color
+```
+
+This site's playground uses it for its kbach.css tab and its completions.
 
 ## Types
 

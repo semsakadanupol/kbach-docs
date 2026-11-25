@@ -28,7 +28,8 @@ Kbach rules. Follow them in every class you write.
    Gradients: bg-linear-to-r from-* via-* to-*.
 4. There is no tailwind.config.js, no @tailwind, no @import "tailwindcss",
    no @theme and no @apply. Settings go in kbach.config.js
-   (export default { darkMode, theme, extend }).
+   (export default { darkMode, theme, extend }). Custom animations go in
+   extend.keyframes and extend.animation and are used as animate-<name>.
 5. Plain HTML page: put <script>window.kbachConfig = { ... }</script> BEFORE
    <script src="https://cdn.jsdelivr.net/npm/@kbach/browser"></script>.
    A theme button calls Kbach.toggle() and needs darkMode: 'class' or
@@ -43,18 +44,31 @@ Kbach rules. Follow them in every class you write.
 8. Dark mode switches use useTheme() from '@kbach/react' or
    '@kbach/react-native': { mode, isDark, setMode, toggle }.
 
-Full documentation: https://github.com/semsakadanupol/kbach
+Full documentation: https://kbach.vercel.app
 <!-- kbach:ai-rules:end -->
 
-# apps/kbach-docs — the Kbach documentation site
+# kbach-docs — the Kbach documentation site
 
 The official docs: a Next.js app (App Router) styled with `@kbach/react`,
 with a small Markdown reader of its own. It builds to plain files (a
 static export: one HTML file per page, in English and Khmer) that any
-static host serves. It's the only app under `apps/` that is tracked in
-git; the others are local sandboxes.
+static host serves.
 
-History: until 2026-11-19 the docs were a Vite app in `apps/kbach-docs`, with a
+**Its own repository** (github.com/semsakadanupol/kbach-docs) since
+2026-11-25, split out of the Kbach monorepo with its history (the user
+wanted the docs separate). Locally it's checked out at `Kbach/apps/kbach-docs`,
+which the Kbach repo ignores and leaves out of its npm workspaces, so this
+folder has its own `node_modules` and `package-lock.json`. It installs
+`@kbach/react` and `@kbach/core-engine` **from npm**: the docs describe
+the published versions, and an unpublished change in the Kbach repo isn't
+visible here until it's released. After each release, raise the versions
+in `package.json`; `tests/e2e/api-reference.mjs` (every export named on
+its API page) and `tests/e2e/ai-rules.mjs` (the AI rules) then say what
+the docs still lack. The playground's kbach.css tab and its completions use
+`@kbach/react/tools` (react 1.1.0+), the same code as the build plugin and
+the VS Code extension, never a copy.
+
+History: until 2026-11-19 the docs were a Vite app (`apps/docs`), with a
 homemade router and prerender script the user found hard to change and
 review. They moved to Next.js, into this app, which the user made with
 `create-next-app` and `npx @kbach/cli init` (so the docs are set up the way
@@ -267,23 +281,28 @@ km, x-default), and `sitemap.xml` lists every page in both languages.
 Without it those are left out (the sitemap is empty).
 
 **Live site: https://kbach.vercel.app** (since 2026-11-25), the Vercel
-project `kbach` in the `cyclone-studio` team. Vercel only hosts the files:
-it can't build the site (no Rust/wasm-pack, no workspace build of
-`@kbach/react`), so the project is set to no framework, no build and no
-root directory, and it is **not** connected to the GitHub repository (a
-connected repo starts a failing build on every push; `vercel link`
-connects it by itself, so run `npx vercel git disconnect` after linking).
-To publish a change:
+project `kbach` in the `cyclone-studio` team, connected to this
+repository: every push to `main` builds and publishes it, other branches
+get a preview. The build follows `vercel.json` (`npm ci`, `npm run build`,
+the files in `out/`, no framework preset) and its rewrite, which serves
+`/en/installation` from `en/installation.html` without redirecting any
+`.html` address (Google's verification file must load as it is; that's why
+it's not `cleanUrls`). The project's environment sets
+`KBACH_DOCS_URL=https://kbach.vercel.app` and `VERCEL_DEEP_CLONE=true` (the
+whole git history, for each page's "Last updated" date; a shallow clone
+would date old pages today). Previews sit behind the team's Vercel login;
+production is public.
+
+To publish without a push, build here and upload `out/`:
 
 ```sh
 KBACH_DOCS_URL=https://kbach.vercel.app npm run build
 node scripts/deploy-vercel.mjs --prod     # leave out --prod for a preview
 ```
 
-The script refuses an `out/` built without `KBACH_DOCS_URL`. It copies
-`out/` to a temp folder outside the repo before deploying, because the CLI,
-run inside the repo, uploads the whole `apps/kbach-docs` folder instead.
-Previews sit behind the team's Vercel login; production is public. The
+The script refuses an `out/` built without `KBACH_DOCS_URL`, and copies
+`out/` to a temp folder outside the repo first (run inside the repo, the CLI
+uploads and builds the whole repo). The
 package `homepage` fields and the AI rules' last line point to this site.
 
 **Search engines.** With `KBACH_DOCS_URL` set, pages also carry schema.org
@@ -300,11 +319,12 @@ then submit `https://kbach.vercel.app/sitemap.xml` in each.
 
 `llms.txt` and `llms-full.txt` are for AI assistants (llmstxt.org). The
 rules in `llms.txt` are the first ` ```text ` block of
-`content/ai-assistants.md`, which is itself a copy of `AI_RULES` in
-`packages/cli/src/aiRules.ts`, the one source (the CLI's `ai` command writes
-the same rules into a project's AGENTS.md). Change the rules there, then run
-`node scripts/sync-ai-rules.mjs` from the repository root;
-`tests/e2e/ai-rules.mjs` fails until the copies match. Added 2026-11-17 after the user gave Gemini a Kbach task
+`content/ai-assistants.md`. Their one source is `AI_RULES` in the Kbach
+repo's `packages/cli/src/aiRules.ts` (the CLI's `ai` command writes the
+same rules into a project's AGENTS.md), and every package ships them in its
+`llms.txt`. `tests/e2e/ai-rules.mjs` fails when the two Markdown pages
+differ from the installed `@kbach/react`'s `llms.txt`: after a release that
+changes them, raise the version and copy them in. Added 2026-11-17 after the user gave Gemini a Kbach task
 and it wrote Tailwind shades (`text-amber-700`) and put `window.kbachConfig`
 after the CDN script; `content/common-mistakes.md` covers those mistakes.
 
@@ -338,7 +358,7 @@ understand, in both languages."
 
 - **Every claim is checked** against the code, the package AGENTS.md
   files, or the engine itself (run the class through `generate_css` /
-  `resolve_style_json` from `packages/core-engine/dist-node`). Sizes,
+  `resolve_style_json` from `@kbach/core-engine/node`, installed here). Sizes,
   versions and file names in the text are measured, not remembered.
 - **Kbach on its own terms.** Explain every idea from zero, for someone
   who never used Tailwind CSS. Tailwind is named only on
