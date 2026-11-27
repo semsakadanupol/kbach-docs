@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Navbar: links fold into a menu below md</title>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <!-- resize the preview (or pick the phone): below md the links fold into the menu button -->
+    <div class="-m-6 min-h-screen">
+      <header class="sticky top-0 z-30 border-b border-line bg-card/80 backdrop-blur-xl">
+        <nav class="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:px-6">
+          <a href="#" class="mr-4 flex shrink-0 items-center gap-2.5 font-bold">
+            <span
+              class="grid size-8 place-items-center rounded-lg bg-brand text-white shadow-md shadow-brand/30"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-4 fill-none stroke-current stroke-2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 2 2 7l10 5 10-5-10-5z" />
+                <path d="m2 17 10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </span>
+            Skyline
+          </a>
+
+          <!-- the links, from md -->
+          <ul class="hidden items-center gap-1 text-sm font-medium md:flex">
+            <li>
+              <a href="#" aria-current="page" class="rounded-lg bg-well px-3 py-2 text-ink">Home</a>
+            </li>
+            <li class="relative">
+              <button
+                id="products-button"
+                aria-expanded="false"
+                aria-controls="products"
+                class="group flex items-center gap-1 rounded-lg px-3 py-2 text-muted transition-colors hover:bg-well hover:text-ink aria-expanded:bg-well aria-expanded:text-ink"
+              >
+                Products
+                <svg
+                  viewBox="0 0 24 24"
+                  class="size-4 fill-none stroke-current stroke-2 transition-transform duration-200 group-aria-expanded:rotate-180"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              <!-- the products menu: each row an icon, a name and one line -->
+              <div
+                id="products"
+                class="absolute top-full left-0 mt-2 hidden w-80 rounded-2xl border border-line bg-card p-2 shadow-xl shadow-ink/10 motion-safe:animate-drop"
+              >
+                <a
+                  href="#"
+                  class="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-well"
+                >
+                  <span
+                    class="grid size-10 shrink-0 place-items-center rounded-lg bg-sky-6/10 text-sky-7 dark:text-sky-4"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="size-5 fill-none stroke-current stroke-2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 20V10M18 20V4M6 20v-4" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0"
+                    ><b class="block font-semibold text-ink">Analytics</b
+                    ><span class="block truncate text-muted"
+                      >See where every visit comes from</span
+                    ></span
+                  >
+                </a>
+                <a
+                  href="#"
+                  class="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-well"
+                >
+                  <span
+                    class="grid size-10 shrink-0 place-items-center rounded-lg bg-amber-6/10 text-amber-7 dark:text-amber-4"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="size-5 fill-none stroke-current stroke-2"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M13 2 3 14h9l-1 8 10-12h-9z" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0"
+                    ><b class="block font-semibold text-ink">Automations</b
+                    ><span class="block truncate text-muted"
+                      >Let the busywork run on its own</span
+                    ></span
+                  >
+                </a>
+                <a
+                  href="#"
+                  class="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-well"
+                >
+                  <span
+                    class="grid size-10 shrink-0 place-items-center rounded-lg bg-violet-6/10 text-violet-7 dark:text-violet-4"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="size-5 fill-none stroke-current stroke-2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0"
+                    ><b class="block font-semibold text-ink">Integrations</b
+                    ><span class="block truncate text-muted"
+                      >Connect the tools you already use</span
+                    ></span
+                  >
+                </a>
+              </div>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="rounded-lg px-3 py-2 text-muted transition-colors hover:bg-well hover:text-ink"
+                >Pricing</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="rounded-lg px-3 py-2 text-muted transition-colors hover:bg-well hover:text-ink"
+                >Docs</a
+              >
+            </li>
+          </ul>
+
+          <div class="ml-auto flex items-center gap-1">
+            <!-- search: a field-like button from sm, just the icon below -->
+            <button
+              class="flex h-9 items-center gap-2 rounded-lg px-2.5 text-sm text-muted transition-colors hover:bg-well hover:text-ink sm:w-48 sm:border sm:border-line sm:bg-surface lg:w-56"
+              aria-label="Search"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-4 shrink-0 fill-none stroke-current stroke-2"
+                stroke-linecap="round"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <span class="hidden flex-1 text-left sm:block">Search…</span>
+              <kbd class="hidden rounded border border-line px-1.5 font-sans text-[11px] lg:block"
+                >Ctrl K</kbd
+              >
+            </button>
+            <!-- the bell, with a dot that pings -->
+            <button
+              class="relative grid size-9 place-items-center rounded-lg text-muted transition-colors hover:bg-well hover:text-ink"
+              aria-label="Notifications"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5 fill-none stroke-current stroke-2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span class="absolute top-2 right-2 flex size-2">
+                <span
+                  class="absolute inline-flex size-full rounded-full bg-rose-5 opacity-75 motion-safe:animate-ping"
+                ></span>
+                <span
+                  class="relative inline-flex size-2 rounded-full bg-rose-6 ring-2 ring-card"
+                ></span>
+              </span>
+            </button>
+            <a
+              href="#"
+              class="ml-1 hidden size-9 place-items-center rounded-full bg-linear-to-br from-sky-5 to-indigo-6 text-xs font-bold text-white ring-2 ring-card md:grid"
+              aria-label="Your account"
+              >SK</a
+            >
+            <!-- the menu button, below md: its icon turns into ✕ -->
+            <button
+              id="menu-button"
+              aria-expanded="false"
+              aria-controls="mobile-menu"
+              aria-label="Menu"
+              class="grid size-9 place-items-center rounded-lg text-ink transition-colors hover:bg-well md:hidden"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5 fill-none stroke-current stroke-2"
+                stroke-linecap="round"
+              >
+                <path id="menu-icon" d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </button>
+          </div>
+        </nav>
+
+        <!-- the phone menu: grid rows from 0fr to 1fr, so it slides open to its own height -->
+        <div
+          id="mobile-menu"
+          class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out md:hidden"
+        >
+          <div class="overflow-hidden">
+            <div class="space-y-1 border-t border-line px-4 py-3 text-sm font-medium">
+              <a href="#" aria-current="page" class="block rounded-lg bg-well px-3 py-2.5">Home</a>
+              <a
+                href="#"
+                class="block rounded-lg px-3 py-2.5 text-muted hover:bg-well hover:text-ink"
+                >Products</a
+              >
+              <a
+                href="#"
+                class="block rounded-lg px-3 py-2.5 text-muted hover:bg-well hover:text-ink"
+                >Pricing</a
+              >
+              <a
+                href="#"
+                class="block rounded-lg px-3 py-2.5 text-muted hover:bg-well hover:text-ink"
+                >Docs</a
+              >
+              <div class="flex items-center gap-3 border-t border-line px-3 pt-4 pb-1">
+                <span
+                  class="grid size-9 place-items-center rounded-full bg-linear-to-br from-sky-5 to-indigo-6 text-xs font-bold text-white"
+                  >SK</span
+                >
+                <span class="min-w-0 flex-1"
+                  ><b class="block truncate">Sokha Kim</b
+                  ><span class="block truncate text-xs text-muted">sokha@skyline.app</span></span
+                >
+                <a href="#" class="rounded-lg border border-line px-3 py-1.5 text-xs">Sign out</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+        <div class="max-w-2xl">
+          <p
+            class="inline-flex motion-safe:animate-rise items-center gap-2 rounded-full border border-line bg-card px-3 py-1 text-xs font-medium text-muted"
+          >
+            <span class="size-1.5 rounded-full bg-emerald-5"></span> All systems normal
+          </p>
+          <h1
+            class="mt-5 motion-safe:animate-rise text-4xl font-bold tracking-tight text-balance [animation-delay:80ms] sm:text-5xl"
+          >
+            Your team's work, <span class="text-accent">in one place</span>
+          </h1>
+          <p
+            class="mt-4 max-w-xl motion-safe:animate-rise text-lg text-pretty text-muted [animation-delay:160ms]"
+          >
+            Make the preview narrower: below md the links fold into the menu button, and the menu
+            slides open to its own height.
+          </p>
+          <div class="mt-8 flex motion-safe:animate-rise flex-wrap gap-3 [animation-delay:240ms]">
+            <a
+              href="#"
+              class="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand/25 transition hover:bg-brand/90 active:scale-95"
+              >Get started</a
+            >
+            <a
+              href="#"
+              class="flex items-center gap-2 rounded-xl border border-line bg-card px-5 py-2.5 text-sm font-semibold transition hover:bg-well active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" class="size-4 fill-current"><path d="M8 5v14l11-7z" /></svg>
+              Watch the demo
+            </a>
+          </div>
+        </div>
+
+        <!-- cards: one column, two from sm, three from lg; two lines of text each at most -->
+        <div class="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <a
+            href="#"
+            class="group rounded-2xl border border-line bg-card p-5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink/5"
+          >
+            <span class="text-xs font-semibold text-accent">Analytics</span>
+            <h2 class="mt-2 font-semibold">Every number, live</h2>
+            <p class="mt-1 line-clamp-2 text-sm text-muted">
+              Dashboards that update as things happen, with the details one click away when you need
+              to dig into a spike.
+            </p>
+            <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium"
+              >Learn more
+              <span class="transition-transform group-hover:translate-x-1">→</span></span
+            >
+          </a>
+          <a
+            href="#"
+            class="group rounded-2xl border border-line bg-card p-5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink/5"
+          >
+            <span class="text-xs font-semibold text-accent">Automations</span>
+            <h2 class="mt-2 font-semibold">Busywork, handled</h2>
+            <p class="mt-1 line-clamp-2 text-sm text-muted">
+              Rules that move tickets, send reminders and tidy up after a launch, so the team can
+              stay on the work that matters.
+            </p>
+            <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium"
+              >Learn more
+              <span class="transition-transform group-hover:translate-x-1">→</span></span
+            >
+          </a>
+          <a
+            href="#"
+            class="group rounded-2xl border border-line bg-card p-5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink/5"
+          >
+            <span class="text-xs font-semibold text-accent">Integrations</span>
+            <h2 class="mt-2 font-semibold">Plays well with others</h2>
+            <p class="mt-1 line-clamp-2 text-sm text-muted">
+              Over a hundred tools connect in a minute: your calendar, your chat, your code host and
+              the spreadsheets nobody wants to give up.
+            </p>
+            <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium"
+              >Learn more
+              <span class="transition-transform group-hover:translate-x-1">→</span></span
+            >
+          </a>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

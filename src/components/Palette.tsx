@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { clsx, useColors } from '@kbach/react';
-import { useT } from '../lib/i18n';
 
 const FAMILIES = [
   'gray', 'slate', 'zinc', 'neutral', 'stone', 'mauve', 'olive', 'mist', 'taupe',
@@ -12,7 +11,6 @@ const SHADES = Array.from({ length: 12 }, (_, i) => i + 1);
 /** The built-in palette, read at runtime through useColors(). Click a swatch to copy its class. */
 export function Palette() {
   const colors = useColors();
-  const t = useT();
   const [copied, setCopied] = useState<string | null>(null);
   const copy = (cls: string) => {
     navigator.clipboard?.writeText(cls);
@@ -22,7 +20,7 @@ export function Palette() {
 
   return (
     <div className="my-8">
-      <p className="mb-3 text-sm text-faint">{t('Click a swatch to copy its class name. Hover for the hex value.')}</p>
+      <p className="mb-3 text-sm text-faint">Click a swatch to copy its class name. Hover for the hex value.</p>
       {/* pt-9 -mt-9: room above the top row for the "Copied" label (the scroller would clip it) */}
       <div className="-mt-9 overflow-x-auto pt-9 pb-2">
         <div className="grid min-w-[640px] grid-cols-[5.5rem_repeat(12,minmax(0,1fr))] gap-x-1.5 gap-y-2 items-center">
@@ -46,7 +44,7 @@ export function Palette() {
                     aria-label={'Copy ' + cls}
                     onClick={() => copy(cls)}
                     style={{ backgroundColor: hex }}
-                    className="relative h-9 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/10 transition-transform hover:scale-110 hover:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                    className="relative h-9 rounded-md ring-1 ring-inset ring-black/10 dark:ring-white/10 transition-transform hover:scale-110 hover:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold active:scale-[0.98]"
                   >
                     {copied === cls && (
                       <>
@@ -62,7 +60,7 @@ export function Palette() {
                             s <= 2 ? 'left-0' : s >= 11 ? 'right-0' : 'left-1/2 -translate-x-1/2',
                           )}
                         >
-                          {t('Copied {cls}').replace('{cls}', cls)}
+                          {'Copied {cls}'.replace('{cls}', cls)}
                         </span>
                       </>
                     )}
@@ -75,7 +73,7 @@ export function Palette() {
       </div>
       {/* for screen readers: what was copied */}
       <p className="sr-only" aria-live="polite">
-        {copied ? t('Copied {cls}').replace('{cls}', copied) : ''}
+        {copied ? 'Copied {cls}'.replace('{cls}', copied) : ''}
       </p>
     </div>
   );

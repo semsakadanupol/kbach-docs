@@ -1,6 +1,6 @@
 // The playground's IDE features and the preview inspector, in real Chromium.
 import { chromium } from 'playwright';
-import { openExample } from './example-link.js';
+import { cdnPage, openExample } from './example-link.js';
 let failures = 0;
 const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
@@ -11,7 +11,7 @@ const ctx = await b.newContext({ viewport: { width: 1440, height: 1000 } });
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => !/about:srcdoc/.test(e.stack || '') && errors.push(e.message));
-await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
 await p.evaluate(() => localStorage.clear());
 await p.reload({ waitUntil: 'networkidle' });
 await p.waitForSelector('.cm-content');
@@ -132,7 +132,8 @@ check(out.includes('{ kbach: [1, 2], ok: true }'), 'and shows objects');
 check(/SyntaxError/.test(out), 'and errors');
 await con.press('ArrowUp');
 check((await con.inputValue()) === 'nope(', '↑ brings back the last line');
-// a script error links to its line
+// a script error links to its line (the page loads its script, as a real one has to: cdnPage's tag)
+await setHtml(cdnPage('<p>x</p>'));
 await p.click('button[role="tab"]:has-text("script")');
 await p.fill(htmlEd, 'const a = 1;\nconst b = 2;\nmissing();');
 await p.waitForTimeout(1600);
@@ -207,12 +208,15 @@ await p.mouse.click(fb.x + h1Box.x, fb.y + h1Box.y);
 await p.waitForSelector('aside[aria-label="Inspector"]', { timeout: 4000 }).catch(() => {});
 const panel = await p.locator('aside[aria-label="Inspector"]').textContent().catch(() => '');
 check(panel.includes('<h1>') && panel.includes('tracking-tight') && panel.includes('Box model') && panel.includes('font-size'), 'clicking opens the inspector with its classes, box model and styles');
-await p.locator('aside[aria-label="Inspector"] button:has-text("Code")').click();
+await p.locator('aside[aria-label="Inspector"] button:text-is("Code")').click();
 await p.waitForTimeout(300);
 check(flat(await p.evaluate(() => getSelection()?.toString() ?? '')).startsWith('<h1 class="mt-6 text-4xl'), 'Code selects the tag in the editor');
 // (checked once Code has scrolled to it: the <h1> is far down the document, and the
 // editor only draws the lines near where it's scrolled to)
 check(flat(await p.$$eval('.cm-editor:visible .cm-kb-picked', (els) => els.map((e) => e.textContent).join(' ')).catch(() => '')).startsWith('<h1 class="mt-6'), 'the picked element\'s tag is marked in the code');
+// the class switches are on Details (the Inspector opens on Design)
+await p.click('[aria-label="Inspector view"] button:has-text("Details")');
+await p.waitForTimeout(200);
 // switch a class off, live (in the canvas only: the code keeps it)
 const size = () => inCanvas(() => getComputedStyle(document.querySelector('h1')).fontWeight);
 const before = await size();
@@ -257,7 +261,7 @@ const fb2 = await (await p.$('iframe[title="Playground canvas"]')).boundingBox()
 await p.mouse.click(fb2.x + sw2.x, fb2.y + sw2.y);
 await p.waitForTimeout(500);
 const made = await p.locator('aside[aria-label="Inspector"]').innerText();
-check(made.includes('The script made this element') && (await p.locator('aside[aria-label="Inspector"] button:has-text("Code")').isDisabled()), 'a script-made element says so, and has no Code link');
+check(made.includes('The script made this element') && (await p.locator('aside[aria-label="Inspector"] button:text-is("Code")').isDisabled()), 'a script-made element says so, and has no Code link');
 check(!(await inCanvas(() => document.querySelector('#card').className)).includes('bg-gray'), 'inspect clicks don\'t reach the page (the swatch\'s own click didn\'t run)');
 await p.keyboard.press('Escape');
 await p.waitForTimeout(200);

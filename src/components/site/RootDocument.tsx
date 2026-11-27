@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react';
-import type { Locale } from '../../lib/locale';
 import '../../app/globals.css';
 import '../../styles/motion.css';
 import '../../styles/editor.css';
-import '../../styles/khmer.css';
 
 // Runs before the first paint, so a dark-mode reader never sees a flash of
 // the light page, and the tab icon matches the browser's theme. It makes the
@@ -40,15 +38,31 @@ const BEFORE_PAINT = `
 })();
 `;
 
+// Before the first paint, for the scroll reveal (components/scrollReveal.ts): marks the page
+// so motion.css keeps its blocks hidden until the reveal plays them in, the ones on the first
+// screen included, without showing them first. Not for reduced motion or a browser the reveal
+// can't run in. If the reveal never takes over (its script failed), everything shows after 3s.
+const REVEAL_BEFORE_PAINT = `
+(function () {
+  try {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window) || !Element.prototype.animate) return;
+    var html = document.documentElement;
+    html.setAttribute('data-kb-reveal', 'wait');
+    setTimeout(function () {
+      if (html.getAttribute('data-kb-reveal') === 'wait') html.removeAttribute('data-kb-reveal');
+    }, 3000);
+  } catch (e) {}
+})();
+`;
+
 /**
- * The page around everything, in one language: <html>, the fonts, the tab
- * icon and the theme. Used by the root layout (app/[lang]/layout.tsx) and
- * by the 404 page.
+ * The page around everything: <html>, the fonts, the tab icon and the theme.
+ * Used by the root layout (app/layout.tsx) and by the 404 page.
  */
-export function RootDocument({ locale, children }: { locale: Locale; children: ReactNode }) {
+export function RootDocument({ children }: { children: ReactNode }) {
   return (
     // the theme script sets a class on <html> before React starts
-    <html lang={locale} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* the tab icon and the bar color come from the script; without JavaScript, the light icon */}
         <noscript>
@@ -62,6 +76,7 @@ export function RootDocument({ locale, children }: { locale: Locale; children: R
           href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
         />
         <script dangerouslySetInnerHTML={{ __html: BEFORE_PAINT }} />
+        <script dangerouslySetInnerHTML={{ __html: REVEAL_BEFORE_PAINT }} />
       </head>
       <body className="bg-page">{children}</body>
     </html>

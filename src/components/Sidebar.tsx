@@ -4,7 +4,6 @@ import { clsx } from '@kbach/react';
 import { NAV } from '../lib/docs';
 import { ChevronRightIcon } from './icons';
 import { SECTION_INFO } from './sections';
-import { useT } from '../lib/i18n';
 import { SiteLink } from './SiteLink';
 import { usePages } from './site/SiteData';
 
@@ -38,7 +37,6 @@ export function Sidebar({ current, onPick }: { current: string; onPick?: () => v
   const stored = useBrowserValue(saved, '[]');
   const [clicked, setClicked] = useState<Set<string> | null>(null);
   const collapsed = useMemo(() => clicked ?? parse(stored), [clicked, stored]);
-  const t = useT();
   const pages = usePages();
   const nav = useRef<HTMLElement>(null);
   const currentSection = NAV.find((s) => s.pages.includes(current))?.title;
@@ -71,7 +69,7 @@ export function Sidebar({ current, onPick }: { current: string; onPick?: () => v
   }, [current, collapsed]);
 
   return (
-    <nav ref={nav} aria-label={t('Documentation')} className="space-y-5 text-sm">
+    <nav ref={nav} aria-label="Documentation" className="space-y-5 text-sm">
       {NAV.map((section) => {
         const open = section.title === currentSection || !collapsed.has(section.title);
         const id = 'nav-' + section.title.toLowerCase().replace(/\s+/g, '-');
@@ -83,13 +81,13 @@ export function Sidebar({ current, onPick }: { current: string; onPick?: () => v
               aria-expanded={open}
               aria-controls={id}
               onClick={() => toggle(section.title)}
-              className="group flex w-full items-center gap-2.5 rounded-md px-2 py-1 text-left text-xs font-semibold uppercase tracking-[0.08em] text-ink transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-gold"
+              className="group flex w-full items-center gap-2.5 rounded-md px-2 py-1 text-left text-xs font-semibold uppercase tracking-[0.08em] text-ink transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-gold active:text-accent"
             >
               <span className="grid size-6 shrink-0 place-items-center rounded-md bg-[#f5ead2] dark:bg-logo text-[13px] text-bronze dark:text-gold shadow-sm ring-1 ring-gold/25" aria-hidden="true">
                 {Icon && <Icon />}
               </span>
-              <span className="flex-1">{t(section.title)}</span>
-              <ChevronRightIcon className={clsx('text-sm text-faint transition-transform duration-200 group-hover:text-accent', open && 'rotate-90')} />
+              <span className="flex-1">{section.title}</span>
+              <ChevronRightIcon className={clsx('text-sm text-faint transition-transform duration-200 group-hover:text-accent group-active:text-accent', open && 'rotate-90')} />
             </button>
             <ul id={id} hidden={!open} className="mt-2 ml-5 space-y-px border-l border-line">
               {section.pages.map((slug) => {
@@ -106,11 +104,11 @@ export function Sidebar({ current, onPick }: { current: string; onPick?: () => v
                         'group -ml-px flex scroll-my-6 items-center border-l-2 py-1.5 pr-3 pl-4 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gold',
                         active
                           ? 'rounded-r-lg border-gold bg-gold/12 font-semibold text-accent'
-                          : 'border-transparent text-muted hover:border-faint hover:text-ink',
+                          : 'border-transparent text-muted hover:border-faint hover:text-ink active:border-faint active:text-ink',
                       )}
                     >
                       {/* the text nudges on hover, not the link: the link's left border is part of the line */}
-                      <span className={clsx('transition-transform duration-200', !active && 'group-hover:translate-x-0.5')}>{page.nav}</span>
+                      <span className={clsx('transition-transform duration-200', !active && 'group-hover:translate-x-0.5 group-active:translate-x-0.5')}>{page.nav}</span>
                     </SiteLink>
                   </li>
                 );

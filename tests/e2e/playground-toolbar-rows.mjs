@@ -7,7 +7,7 @@ const cases = [];
 for (const w of [1024, 1280, 1366, 1440, 1920]) for (const split of [25, 45, 75]) cases.push({ w, layout: 'left', split });
 for (const c of cases) {
   const p = await b.newPage({ viewport: { width: c.w, height: 900 } });
-  await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+  await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
   await p.evaluate((c) => { localStorage.setItem('kbach-playground-panes', c.layout); localStorage.setItem('kbach-playground-split', String(c.split)); }, c);
   await p.reload({ waitUntil: 'networkidle' });
   await p.waitForTimeout(500);

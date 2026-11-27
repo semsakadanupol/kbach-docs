@@ -1,8 +1,6 @@
 import type { Page } from '../markdown/parse';
-import { localHref, type Locale } from './locale';
 
-// What the docs are made of: every page is a Markdown file in content/, and
-// its Khmer text is in content/km/ (the same file name). The sidebar order
+// What the docs are made of: every page is a Markdown file in content/. The sidebar order
 // is set here. Reading the files is content.ts's job (at build time); this
 // file is safe to use anywhere.
 
@@ -10,11 +8,8 @@ export interface DocPage extends Page {
   slug: string;
   title: string;
   description: string;
-  /** its section's English title (NAV), the key for its name in either language */
+  /** its section's title (NAV) */
   section: string;
-  locale: Locale;
-  /** asked for in Khmer, but there's no Khmer page yet: this is the English one */
-  fallback?: boolean;
   /** when its file last changed (an ISO date), if known */
   updated?: string;
 }
@@ -54,9 +49,9 @@ export const REDIRECTS: Record<string, string> = {
 /** The first page of the docs (the header's Docs link). */
 export const HOME = 'introduction';
 
-/** Every page has its own path (/km/… in Khmer); / is the home page (components/Landing.tsx). */
-export function hrefFor(slug: string, locale: Locale): string {
-  return localHref('/' + slug, locale);
+/** Every page has its own path (/<slug>); / is the home page (components/Landing.tsx). */
+export function hrefFor(slug: string): string {
+  return '/' + slug;
 }
 
 // Version shown in the header, read from the @kbach/react package in this repo.

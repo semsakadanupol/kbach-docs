@@ -1,4 +1,3 @@
-import { useT } from '../lib/i18n';
 import { useEffect, useMemo, useState } from 'react';
 import { clsx } from '@kbach/react';
 import type { DocPage } from '../lib/docs';
@@ -40,11 +39,10 @@ export function Toc({ page }: { page: DocPage }) {
     };
   }, [headings, page]);
 
-  const t = useT();
   if (!headings.length) return null;
   return (
-    <nav aria-label={t('On this page')} className="text-[13px]">
-      <p className="mb-3 font-semibold text-ink">{t('On this page')}</p>
+    <nav aria-label="On this page" className="text-[13px]">
+      <p className="mb-3 font-semibold text-ink">On this page</p>
       <ul className="space-y-0.5 border-l border-line">
         {headings.map((h) => (
           <li key={h.id}>
@@ -55,7 +53,7 @@ export function Toc({ page }: { page: DocPage }) {
               className={clsx(
                 '-ml-px block border-l py-1 leading-5 transition-colors',
                 h.level === 3 ? 'pl-6' : 'pl-3',
-                active === h.id ? 'border-gold text-accent font-medium' : 'border-transparent text-muted hover:text-ink',
+                active === h.id ? 'border-gold text-accent font-medium' : 'border-transparent text-muted hover:text-ink active:text-ink',
               )}
             >
               {h.text}
@@ -66,9 +64,9 @@ export function Toc({ page }: { page: DocPage }) {
       <button
         type="button"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="mt-6 text-faint transition-colors hover:text-accent"
+        className="mt-6 text-faint transition-colors hover:text-accent active:text-accent"
       >
-        {t('Back to top')} ↑
+        Back to top ↑
       </button>
     </nav>
   );

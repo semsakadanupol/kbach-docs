@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Colors: 26 families, 12 shades, click one to copy</title>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <main class="mx-auto max-w-5xl py-6 sm:py-10">
+      <header>
+        <p class="text-sm font-semibold text-muted">The palette</p>
+        <h1 class="mt-1 text-3xl font-bold tracking-tight">26 families, 12 shades each</h1>
+        <p class="mt-2 max-w-xl text-pretty text-muted">
+          1 is the lightest and 12 the darkest; 6 is the color at its truest. Pick a shade to see it
+          up close, and copy its class.
+        </p>
+      </header>
+
+      <!-- the picked color: big, with its classes to copy and how text reads on it -->
+      <section
+        class="mt-8 grid gap-4 rounded-3xl border border-line bg-card p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] sm:p-5"
+      >
+        <div
+          id="big"
+          class="flex h-40 flex-col justify-between rounded-2xl p-5 transition-colors duration-300 sm:h-auto"
+        >
+          <span id="big-name" class="text-2xl font-bold"></span>
+          <span id="big-hex" class="font-mono text-sm opacity-80"></span>
+        </div>
+        <div class="flex min-w-0 flex-col justify-center gap-4">
+          <div>
+            <p class="text-xs font-semibold tracking-wider text-muted uppercase">Copy a class</p>
+            <div id="copy" class="mt-2 flex flex-wrap gap-2"></div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold tracking-wider text-muted uppercase">Text on it</p>
+            <div class="mt-2 grid grid-cols-2 gap-2 text-sm font-semibold">
+              <span id="on-white" class="rounded-xl bg-white px-4 py-3 ring-1 ring-line"
+                >On white</span
+              >
+              <span id="on-black" class="rounded-xl bg-black px-4 py-3 ring-1 ring-line"
+                >On black</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- the grid: a row a family, a column a shade; it scrolls sideways on a very small phone -->
+      <div class="mt-8 overflow-x-auto pb-2">
+        <div id="palette" class="min-w-[34rem] space-y-1.5"></div>
+      </div>
+    </main>
+
+    <!-- "Copied": pops in at the bottom, then goes (centered by its row, so the pop's scale
+         doesn't fight a translate) -->
+    <div class="pointer-events-none fixed inset-x-0 bottom-6 flex justify-center">
+      <p
+        id="toast"
+        role="status"
+        class="hidden rounded-full bg-ink px-4 py-2 text-sm font-semibold text-surface shadow-xl"
+      ></p>
+    </div>
+  </body>
+</html>

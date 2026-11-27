@@ -1,7 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { clsx } from '@kbach/react';
 import { ChevronDownIcon } from './icons';
-import { useT } from '../lib/i18n';
 
 export interface ClassRow {
   cls: string;
@@ -31,7 +30,6 @@ const FOLDED_ROWS = 8;
  * lines truncate instead of stretching the table).
  */
 export function ClassTableFrame({ rows }: { rows: ClassRow[] }) {
-  const t = useT();
   const foldable = rows.length > FOLD_OVER;
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -54,18 +52,18 @@ export function ClassTableFrame({ rows }: { rows: ClassRow[] }) {
     <div ref={box} className="my-6 scroll-mt-24 overflow-hidden rounded-xl border border-line bg-card">
       {allWeb && (
         <p className="flex items-center gap-2 border-b border-line bg-panel/60 px-4 py-2 text-[13px] text-muted">
-          <span className="rounded-full border border-line bg-panel px-1.5 text-[10.5px] leading-4 font-medium text-faint">{t('Web only')}</span>
-          {t('None of these classes do anything on React Native.')}
+          <span className="rounded-full border border-line bg-panel px-1.5 text-[10.5px] leading-4 font-medium text-faint">Web only</span>
+          None of these classes do anything on React Native.
         </p>
       )}
       <table className="w-full border-collapse text-left font-mono text-[13px]">
         <thead className="bg-panel font-sans">
           <tr>
             <th scope="col" className="w-px border-b border-line py-2.5 pr-6 pl-4 font-semibold whitespace-nowrap text-ink">
-              {t('Class')}
+              Class
             </th>
             <th scope="col" className="border-b border-line px-4 py-2.5 font-semibold text-ink">
-              {t('Styles')}
+              Styles
             </th>
           </tr>
         </thead>
@@ -83,10 +81,10 @@ export function ClassTableFrame({ rows }: { rows: ClassRow[] }) {
                 {r.cls}
                 {r.webOnly && !allWeb && (
                   <span
-                    title={t('Does nothing on React Native')}
+                    title="Does nothing on React Native"
                     className="ml-2 inline-block -translate-y-px rounded-full border border-line bg-panel px-1.5 align-middle font-sans text-[10.5px] leading-4 font-medium text-faint"
                   >
-                    {t('Web only')}
+                    Web only
                   </span>
                 )}
               </td>
@@ -102,9 +100,9 @@ export function ClassTableFrame({ rows }: { rows: ClassRow[] }) {
           type="button"
           onClick={toggle}
           aria-expanded={open}
-          className="flex w-full items-center justify-center gap-1.5 border-t border-line bg-panel/60 py-2 text-[13px] font-medium text-muted transition-colors hover:bg-panel hover:text-ink"
+          className="flex w-full items-center justify-center gap-1.5 border-t border-line bg-panel/60 py-2 text-[13px] font-medium text-muted transition-colors hover:bg-panel hover:text-ink active:bg-panel active:text-ink"
         >
-          {open ? t('Show fewer') : t('Show all {n} classes').replace('{n}', String(rows.length))}
+          {open ? 'Show fewer' : 'Show all {n} classes'.replace('{n}', String(rows.length))}
           <ChevronDownIcon className={clsx('text-sm transition-transform duration-200', open && 'rotate-180')} />
         </button>
       )}

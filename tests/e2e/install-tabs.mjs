@@ -6,7 +6,7 @@ const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
   if (!ok) failures++;
 };
-const URL = 'http://localhost:5176/en/installation';
+const URL = 'http://localhost:5176/installation';
 const b = await chromium.launch();
 
 /** The bar: does it overflow, and which tabs show their name (sr-only hides it). */

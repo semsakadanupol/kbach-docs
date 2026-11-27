@@ -32,6 +32,24 @@ const DEFAULT_HEAD = `
 /** A document with nothing in its body: what Clear all leaves. */
 export const EMPTY_DOCUMENT = documentWith('');
 
+/** The words a new blank page opens with, selected so typing replaces them. */
+export const STARTER_TEXT = 'Write something here';
+
+/**
+ * A new blank page (the gallery's Blank page card, New blank page in ⋯): a heading to type over
+ * and a line about Kbach, in classes of the default palette (any kbach.config.js has them). Its
+ * React version is made from this by convert.ts, so the two never drift apart.
+ */
+export const STARTER_DOCUMENT = documentWith(`
+<div class="grid min-h-[80vh] place-items-center text-center">
+  <div>
+    <h1 class="bg-linear-to-r from-violet-6 to-rose-5 bg-clip-text pb-1 text-4xl font-bold tracking-tight text-transparent sm:text-5xl">
+      ${STARTER_TEXT}
+    </h1>
+    <p class="mt-3 text-gray-6 dark:text-gray-4">Every class gets its CSS from Kbach as you type.</p>
+  </div>
+</div>`);
+
 function documentWith(body: string): string {
   const inner = body.trim() ? body.trim().replace(/^(?=.)/gm, '    ') : '    ';
   return '<!doctype html>\n<html lang="en">\n  <head>' + DEFAULT_HEAD + '</head>\n  <body>\n' + inner + '\n  </body>\n</html>\n';

@@ -4,8 +4,8 @@ const check = (ok, msg) => { console.log((ok ? 'OK   ' : 'FAIL ') + msg); if (!o
 const b = await chromium.launch();
 for (const w of [320, 360, 480, 640, 768, 1024, 1280, 1440]) {
   const p = await b.newPage({ viewport: { width: w, height: 900 } });
-  await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
-  await p.waitForSelector('.cm-content'); await p.waitForTimeout(600);
+  await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
+  await p.waitForSelector('.cm-content', { state: 'attached' }); await p.waitForTimeout(600);
   const r = await p.evaluate(() => {
     const bar = document.querySelector('section:has(iframe) > div:first-child');
     const br = bar.getBoundingClientRect();

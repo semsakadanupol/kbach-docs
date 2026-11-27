@@ -3,7 +3,7 @@ import { BoltIcon, CodeIcon, LayersIcon, PaletteIcon, PlayIcon } from '../icons'
 /** The three parts of the site. The header, the phone menu and the shell change with it. */
 export type Place = 'home' | 'docs' | 'playground';
 
-/** Which part a path (without its /km) is in. */
+/** Which part of the site a path is in. */
 export function placeOf(path: string): Place {
   const slug = path.replace(/^\/+|\/+$/g, '');
   return slug === '' ? 'home' : slug === 'playground' ? 'playground' : 'docs';

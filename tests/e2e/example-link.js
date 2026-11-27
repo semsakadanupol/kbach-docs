@@ -1,6 +1,6 @@
 // Opens a page in the playground as a share link (#code=…&js=…), the same
 // thing a reader gets from Share. The pages: the playground's own example
-// (content/playground/1-landing) and the test pages in ./fixtures (navbar,
+// (content/playground/1-landing/, a folder) and the test pages in ./fixtures (navbar,
 // colors, toasts, checklist), each a body's markup plus an optional .js or
 // .ts file. A .js file, so run.mjs (which runs every .mjs here) doesn't
 // treat it as a suite.
@@ -12,23 +12,58 @@ const here = dirname(fileURLToPath(import.meta.url));
 const dirs = [join(here, 'fixtures'), join(here, '..', '..', 'content', 'playground')];
 const encode = (text) => Buffer.from(text, 'utf-8').toString('base64url');
 
-/** `/en/playground#code=…` for a page such as 'navbar' or '1-landing', its script and language included. */
+/**
+ * The files of a page such as 'navbar' (a fixture: navbar.html, navbar.js or .ts, navbar.config.js)
+ * or '1-landing' (an example's folder: index.html, script.js or .ts, kbach.config.js).
+ */
+function pageFiles(id) {
+  for (const d of dirs) {
+    const folder = join(d, id);
+    if (existsSync(join(folder, 'index.html')))
+      return { html: join(folder, 'index.html'), ts: join(folder, 'script.ts'), js: join(folder, 'script.js'), config: join(folder, 'kbach.config.js') };
+    if (existsSync(join(d, id + '.html')))
+      return { html: join(d, id + '.html'), ts: join(d, id + '.ts'), js: join(d, id + '.js'), config: join(d, id + '.config.js') };
+  }
+  throw new Error('no test page named ' + id);
+}
+
+/**
+ * A whole page as HTML mode has one (2026-11-27): it loads kbach.config.js (the playground's
+ * Config tab, window.kbachConfig), then Kbach's CDN script, and its script (script.js, or
+ * script.ts with lang 'ts') before </body>; `body` is its body. For a test that types a page in:
+ * a snippet alone has no Kbach and runs no script, as a plain page without the tags.
+ */
+export function cdnPage(body, lang = 'js') {
+  return [
+    '<!doctype html>',
+    '<html lang="en">',
+    '  <head>',
+    '    <title>Test</title>',
+    '    <script src="kbach.config.js"></script>',
+    '    <script src="https://cdn.jsdelivr.net/npm/@kbach/browser"></script>',
+    '  </head>',
+    '  <body>',
+    '    ' + body,
+    '    <script type="module" src="script.' + lang + '"></script>',
+    '  </body>',
+    '</html>',
+    '',
+  ].join('\n');
+}
+
+/** `/playground#code=…` for a page such as 'navbar' or '1-landing', its script and language included. */
 export function exampleLink(base, id) {
-  const dir = dirs.find((d) => existsSync(join(d, id + '.html')));
-  if (!dir) throw new Error('no test page named ' + id);
-  const html = readFileSync(join(dir, id + '.html'), 'utf-8').replace(/\r\n/g, '\n').replace(/^<!--.*?-->\s*\n?/, '');
-  const ts = join(dir, id + '.ts');
-  const js = join(dir, id + '.js');
-  const scriptPath = existsSync(ts) ? ts : existsSync(js) ? js : null;
+  const files = pageFiles(id);
+  const html = readFileSync(files.html, 'utf-8').replace(/\r\n/g, '\n').replace(/^<!--.*?-->\s*\n?/, '');
+  const scriptPath = existsSync(files.ts) ? files.ts : existsSync(files.js) ? files.js : null;
   let hash = '#code=' + encode(html);
   if (scriptPath) {
     const script = readFileSync(scriptPath, 'utf-8').replace(/\r\n/g, '\n');
-    if (script.trim()) hash += '&js=' + encode(script) + (scriptPath === ts ? '&lang=ts' : '');
+    if (script.trim()) hash += '&js=' + encode(script) + (scriptPath === files.ts ? '&lang=ts' : '');
   }
   // its own kbach.config.js (the theme its classes use), as Share includes it
-  const config = join(dir, id + '.config.js');
-  if (existsSync(config)) hash += '&config=' + encode(readFileSync(config, 'utf-8').replace(/\r\n/g, '\n'));
-  return base + '/en/playground' + hash;
+  if (existsSync(files.config)) hash += '&config=' + encode(readFileSync(files.config, 'utf-8').replace(/\r\n/g, '\n'));
+  return base + '/playground' + hash;
 }
 
 /**

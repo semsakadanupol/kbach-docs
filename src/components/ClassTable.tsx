@@ -95,7 +95,7 @@ function StyleCell({ blocks }: { blocks: PrettyBlock[] }) {
           </span>
         ))}
         {hidden > 0 && (
-          <button type="button" onClick={() => setUnfolded(true)} className="font-sans text-xs text-faint hover:text-accent">
+          <button type="button" onClick={() => setUnfolded(true)} className="font-sans text-xs text-faint hover:text-accent active:text-accent">
             {hidden} more {hidden === 1 ? 'line' : 'lines'}
           </button>
         )}
@@ -107,7 +107,7 @@ function StyleCell({ blocks }: { blocks: PrettyBlock[] }) {
           aria-expanded={unfolded}
           aria-label={unfolded ? 'Show less' : 'Show all of it'}
           title={unfolded ? 'Show less' : 'Show all of it'}
-          className="grid size-6 shrink-0 place-items-center rounded-md text-faint transition-colors hover:bg-raised hover:text-ink"
+          className="grid size-6 shrink-0 place-items-center rounded-md text-faint transition-colors hover:bg-raised hover:text-ink active:bg-raised active:text-ink"
         >
           <ChevronDownIcon className={clsx('text-[13px] transition-transform duration-200', unfolded && 'rotate-180')} />
         </button>

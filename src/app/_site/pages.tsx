@@ -1,50 +1,48 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { REDIRECTS } from '../../lib/docs';
+import { REDIRECTS, hrefFor } from '../../lib/docs';
 import { allSlugs, getPage, redirectSlugs, searchEntries } from '../../lib/content';
-import { localHref, type Locale } from '../../lib/locale';
 import { HOME_META, docTitle, pageMetadata } from '../../lib/metadata';
 import { DocPageView } from '../../components/site/DocPageView';
 import { HomePage } from '../../components/site/HomePage';
 import { PlaygroundPage } from '../../components/site/PlaygroundPage';
 import { JsonLd, docJsonLd, siteJsonLd } from '../../lib/structuredData';
 
-// What each kind of page is, for both languages. The files in app/ are
-// small: each passes its language to one of these.
+// What each kind of page is. The files in app/ are small: each is one of these.
 
-// --- the home page: /en and /km ---
+// --- the home page: / ---
 
-export function homeMetadata(locale: Locale): Metadata {
-  return pageMetadata({ ...HOME_META[locale], locale, path: localHref('/', locale) });
+export function homeMetadata(): Metadata {
+  return pageMetadata({ ...HOME_META, path: '/' });
 }
 
-export function HomeRoute({ locale }: { locale: Locale }) {
+export function HomeRoute() {
   return (
     <>
-      <JsonLd data={siteJsonLd(locale)} />
+      <JsonLd data={siteJsonLd()} />
       <HomePage />
     </>
   );
 }
 
-// --- a docs page: /en/<slug> and /km/<slug>, one for every file in content/ ---
+// --- a docs page: /<slug>, one for every file in content/ ---
 
 /** Every docs page, and the old addresses of pages that moved (REDIRECTS in lib/docs.ts). */
 export function docParams(): { slug: string }[] {
   return [...allSlugs().filter((slug) => slug !== 'playground'), ...redirectSlugs()].map((slug) => ({ slug }));
 }
 
-export function docMetadata(slug: string, locale: Locale): Metadata {
+export function docMetadata(slug: string): Metadata {
   const target = REDIRECTS[slug] ?? slug;
-  const page = getPage(target, locale);
+  const page = getPage(target);
   if (!page) return {};
   // a moved page's old address points search engines at the new one
-  return pageMetadata({ title: docTitle(page.title, locale), description: page.description, locale, path: localHref('/' + target, locale), noindex: target !== slug });
+  return pageMetadata({ title: docTitle(page.title), description: page.description, path: hrefFor(target), noindex: target !== slug });
 }
 
-export function DocRoute({ slug, locale }: { slug: string; locale: Locale }) {
+export function DocRoute({ slug }: { slug: string }) {
   const target = REDIRECTS[slug] ?? slug;
-  const page = getPage(target, locale);
+  const page = getPage(target);
   if (!page) notFound();
   return (
     <>
@@ -54,19 +52,19 @@ export function DocRoute({ slug, locale }: { slug: string; locale: Locale }) {
   );
 }
 
-// --- the playground: /en/playground and /km/playground ---
+// --- the playground: /playground ---
 
-export function playgroundMetadata(locale: Locale): Metadata {
-  const page = getPage('playground', locale)!;
-  return pageMetadata({ title: docTitle(page.title, locale), description: page.description, locale, path: localHref('/playground', locale) });
+export function playgroundMetadata(): Metadata {
+  const page = getPage('playground')!;
+  return pageMetadata({ title: docTitle(page.title), description: page.description, path: '/playground' });
 }
 
-export function PlaygroundRoute({ locale }: { locale: Locale }) {
-  return <PlaygroundPage title={getPage('playground', locale)?.title ?? 'Playground'} />;
+export function PlaygroundRoute() {
+  return <PlaygroundPage title={getPage('playground')?.title ?? 'Playground'} />;
 }
 
-// --- what search looks through: /en/search.json and /km/search.json ---
+// --- what search looks through: /search.json ---
 
-export function searchJson(locale: Locale): Response {
-  return Response.json(searchEntries(locale));
+export function searchJson(): Response {
+  return Response.json(searchEntries());
 }

@@ -5,5 +5,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "out",
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/:lang(en|km)", "destination": "/", "permanent": true },
+    { "source": "/:lang(en|km)/:path*", "destination": "/:path*", "permanent": true }
+  ],
   "rewrites": [{ "source": "/:path((?:[^/]+/)*[^/.]+)", "destination": "/:path.html" }]
 }

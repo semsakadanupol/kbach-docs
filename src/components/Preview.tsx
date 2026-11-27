@@ -33,7 +33,7 @@ export function Preview({ html, title }: { html: string; title?: string }) {
               onClick={() => setTab(t)}
               className={clsx(
                 'h-7 rounded-md px-3 text-[13px] font-medium transition-colors',
-                tab === t ? 'bg-card text-ink shadow-xs ring-1 ring-line' : 'text-muted hover:text-ink',
+                tab === t ? 'bg-card text-ink shadow-xs ring-1 ring-line' : 'text-muted hover:text-ink active:text-ink',
               )}
             >
               {t === 'preview' ? 'Preview' : 'Code'}

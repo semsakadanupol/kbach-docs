@@ -4,12 +4,12 @@ import { createContext, Suspense, useContext, useEffect, useRef, useState, type 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { applyKbachConfig, useTheme } from '@kbach/react';
 import config from '../../../kbach.config.js';
-import { LANGUAGE_KEY, stripLocale, useLocale, useT } from '../../lib/i18n';
 import { notifyLocation, rememberPreviousPage, scrollToHashTarget } from '../../lib/location';
 import { SearchDialog } from '../Search';
 import { Header } from './Header';
 import { MobileNav } from './MobileNav';
 import { placeOf } from './places';
+import { startScrollReveal } from '../scrollReveal';
 
 // The build already compiled the site's CSS from kbach.config.js. Applying
 // it here too gives the runtime engine (live previews, the playground) the
@@ -30,23 +30,31 @@ export function useOpenSearch(): () => void {
  * page: it gets none of the chrome.
  */
 export function Shell({ children }: { children: ReactNode }) {
-  const t = useT();
-  const locale = useLocale();
-  const fullPath = usePathname();
-  const path = stripLocale(fullPath);
+  const path = usePathname();
   const place = placeOf(path);
   const slug = path.replace(/^\/+|\/+$/g, '');
   const [menu, setMenu] = useState(false);
   const [searching, setSearching] = useState(false);
 
+  // iOS Safari applies :active only on a page that listens for touches, so without this the
+  // press looks (active:, the touch twin of every hover: style) never show on an iPhone
+  useEffect(() => {
+    const none = () => {};
+    document.addEventListener('touchstart', none, { passive: true });
+    return () => document.removeEventListener('touchstart', none);
+  }, []);
+
+  // the scroll reveal (scrollReveal.ts), again for each page
+  useEffect(() => startScrollReveal(), [path]);
+
   // the page-change bar: counts navigations, so the first load shows none
   const [navs, setNavs] = useState(0);
-  const lastPath = useRef(fullPath);
+  const lastPath = useRef(path);
   const lastFull = useRef('');
   useEffect(() => {
     const here = () => window.location.pathname + window.location.search + window.location.hash;
-    if (fullPath !== lastPath.current) {
-      lastPath.current = fullPath;
+    if (path !== lastPath.current) {
+      lastPath.current = path;
       setNavs((n) => n + 1);
       rememberPreviousPage(lastFull.current);
       setMenu(false);
@@ -76,16 +84,7 @@ export function Shell({ children }: { children: ReactNode }) {
       window.removeEventListener('hashchange', track);
       window.removeEventListener('popstate', track);
     };
-  }, [fullPath]);
-
-  // the reader's language, for the site's root address (/ goes to /en or /km)
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(LANGUAGE_KEY, locale);
-    } catch {
-      // storage blocked: / goes by the browser's language
-    }
-  }, [locale]);
+  }, [path]);
 
   // The browser bar's color (on a phone) blends with the page, so it follows
   // the site's theme, also after a switch (the layout's script sets it before
@@ -125,7 +124,7 @@ export function Shell({ children }: { children: ReactNode }) {
           />
         )}
         <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-ink">
-          {t('Skip to content')}
+          Skip to content
         </a>
         <Header onMenu={() => setMenu(true)} onSearch={() => setSearching(true)} at={place} />
         <MobileNav open={menu} current={place === 'home' ? '' : slug} at={place} onClose={() => setMenu(false)} />

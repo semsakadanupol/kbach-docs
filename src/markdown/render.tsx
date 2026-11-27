@@ -1,6 +1,5 @@
 'use client';
 
-import { useT } from '../lib/i18n';
 import type { ReactNode } from 'react';
 import { clsx } from '@kbach/react';
 import type { Block, Inline } from './parse';
@@ -18,8 +17,10 @@ export function renderInline(nodes: Inline[]): ReactNode[] {
       case 'text':
         return n.v;
       case 'code':
+        // a short one (a class name like text-gray-12) stays on one line: broken at its hyphen it
+        // reads as two classes; a long one may still wrap anywhere, so a phone never scrolls sideways
         return (
-          <code key={i} className="rounded-md border border-line bg-raised/60 px-1.5 py-0.5 font-mono text-[0.85em] text-ink [overflow-wrap:anywhere]">
+          <code key={i} className={clsx('rounded-md border border-line bg-raised/60 px-1.5 py-0.5 font-mono text-[0.85em] text-ink', n.v.length <= 24 && !/\s/.test(n.v) ? 'whitespace-nowrap' : '[overflow-wrap:anywhere]')}>
             {n.v}
           </code>
         );
@@ -39,8 +40,8 @@ export function renderInline(nodes: Inline[]): ReactNode[] {
         );
       case 'link': {
         // a template literal, not a plain string: Kbach's plugin scans those, so the classes get their CSS
-        const className = `font-medium text-accent underline decoration-accent/40 decoration-1 underline-offset-[3px] transition-colors hover:decoration-accent`;
-        // another site: a new tab; a #section of this page: scroll there; a page of this site: in the page's language
+        const className = `font-medium text-accent underline decoration-accent/40 decoration-1 underline-offset-[3px] transition-colors hover:decoration-accent active:decoration-accent`;
+        // another site: a new tab; a #section of this page: scroll there; a page of this site: SiteLink
         if (/^https?:/.test(n.href))
           return (
             <a key={i} href={n.href} target="_blank" rel="noreferrer" className={className}>
@@ -89,7 +90,7 @@ function Heading({ level, id, children }: { level: 2 | 3 | 4; id: string; childr
         href={'#' + id}
         onClick={onHashLinkClick}
         aria-label="Link to this section"
-        className="absolute -left-6 top-[0.15em] hidden md:flex items-center text-faint opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-accent"
+        className="absolute -left-6 top-[0.15em] hidden md:flex items-center text-faint opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-accent group-active:opacity-100 active:text-accent"
       >
         <HashIcon className="text-base" />
       </a>
@@ -103,7 +104,6 @@ export function RenderBlocks({ blocks }: { blocks: Block[] }) {
 }
 
 function RenderBlock({ block: b }: { block: Block }) {
-  const t = useT();
   switch (b.t) {
     case 'heading':
       return (
@@ -174,7 +174,7 @@ function RenderBlock({ block: b }: { block: Block }) {
         <div className={clsx('my-6 flex gap-3 rounded-xl border px-4 py-3.5', k.box)}>
           <Icon className={clsx('mt-1 shrink-0 text-lg', k.tint)} />
           <div className="min-w-0 [&>p]:my-1.5 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>ul]:my-2">
-            <p className={clsx('text-sm font-semibold', k.tint)}>{b.title ?? t(k.label)}</p>
+            <p className={clsx('text-sm font-semibold', k.tint)}>{b.title ?? k.label}</p>
             <RenderBlocks blocks={b.c} />
           </div>
         </div>

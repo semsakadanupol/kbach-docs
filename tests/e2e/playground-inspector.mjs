@@ -10,7 +10,7 @@ const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1440, height: 1000 } });
 const errors = [];
 p.on('pageerror', (e) => errors.push(e.message));
-await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
 await p.evaluate(() => localStorage.clear());
 await p.reload({ waitUntil: 'networkidle' });
 await p.waitForTimeout(1500);
@@ -91,6 +91,8 @@ await toggleInspect();
 pt = await at('h2');
 await p.mouse.click(pt.x, pt.y);
 await p.waitForTimeout(400);
+// the class list is on Details (the Inspector opens on Design, then remembers the tab picked)
+await p.click('[aria-label="Inspector view"] button:has-text("Details")');
 const o1 = await classOrder();
 await p.locator('aside[aria-label="Inspector"] input[aria-label^="Turn off text-2xl"]').click();
 await p.waitForTimeout(300);
@@ -149,9 +151,9 @@ if ((await p.getAttribute(inspect, 'aria-pressed')) !== 'true') await toggleInsp
 pt = await at('h1');
 await p.mouse.click(pt.x, pt.y);
 await p.waitForTimeout(400);
-await p.click('button[aria-label="Run again"]');
+await p.click('button[aria-label="Reload"]');
 await p.waitForTimeout(1200);
-check((await panelText())?.includes('<h1>') && (await overlay()).selected, 'after Run again, the same element is still picked and outlined');
+check((await panelText())?.includes('<h1>') && (await overlay()).selected, 'after Reload, the same element is still picked and outlined');
 
 check(errors.length === 0, 'no page errors ' + errors.join(' | '));
 await b.close();

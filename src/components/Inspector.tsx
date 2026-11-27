@@ -3,8 +3,11 @@ import { clsx } from '@kbach/react';
 import { cssForClass, isKnownClass, suggestFor } from '../playground/engine';
 import type { Trail } from '../playground/sourceMap';
 import { ChevronDownIcon, CloseIcon, CodeIcon } from './icons';
+import { DesignPanel } from './DesignPanel';
 
 type Sides = { t: number; r: number; b: number; l: number };
+
+const VIEW_KEY = 'kbach-playground-inspector-view';
 
 /** What the canvas says about the selected element (canvas-runtime.js, info()). */
 export interface InspectInfo {
@@ -91,7 +94,7 @@ function ClassRow({
   const css = known ? cssForClass(cls) : '';
   return (
     <li className="group/row">
-      <div className="flex items-center gap-2 rounded-md px-1.5 py-1 hover:bg-raised/60">
+      <div className="flex items-center gap-2 rounded-md px-1.5 py-1 hover:bg-raised/60 active:bg-raised/60">
         <input
           type="checkbox"
           checked={on}
@@ -119,7 +122,7 @@ function ClassRow({
             <button
               type="button"
               onClick={() => onFix(fix)}
-              className="shrink-0 rounded border border-amber-6/40 bg-amber-6/10 px-1.5 font-mono text-[11px] text-amber-8 hover:bg-amber-6/20 dark:text-amber-4"
+              className="shrink-0 rounded border border-amber-6/40 bg-amber-6/10 px-1.5 font-mono text-[11px] text-amber-8 hover:bg-amber-6/20 dark:text-amber-4 active:bg-amber-6/20"
               title={'Replace with ' + fix + ' in the code'}
             >
               → {fix}
@@ -134,7 +137,7 @@ function ClassRow({
             onClick={onRemove}
             aria-label={'Remove ' + cls + ' from the code'}
             title="Remove it from the code"
-            className="grid size-5 shrink-0 place-items-center rounded text-faint opacity-0 transition hover:bg-raised hover:text-ink group-hover/row:opacity-100 focus-visible:opacity-100"
+            className="grid size-5 shrink-0 place-items-center rounded text-faint opacity-0 transition hover:bg-raised hover:text-ink group-hover/row:opacity-100 focus-visible:opacity-100 active:bg-raised active:text-ink"
           >
             <CloseIcon className="text-[11px]" />
           </button>
@@ -161,11 +164,18 @@ export function Inspector({
   onAddClass,
   onRemoveClass,
   onReplaceClass,
+  onSetClasses,
   onGoToCode,
+  sourceFile = 'index.html',
+  readOnlyReason = 'The script made this element, so it isn’t in index.html. Its classes can still be switched off here.',
 }: {
   info: InspectInfo;
-  /** whether the element has a tag in index.html (the script didn't make it) */
+  /** whether the element's classes can be changed in the code (index.html, or App.jsx in React mode) */
   inSource: boolean;
+  /** the file its classes are in, for the Code button's title */
+  sourceFile?: string;
+  /** why they can't be, when they can't */
+  readOnlyReason?: string;
   onClose: () => void;
   onSelect: (trail: Trail) => void;
   onHover: (trail: Trail | null) => void;
@@ -173,9 +183,28 @@ export function Inspector({
   onAddClass: (cls: string) => void;
   onRemoveClass: (cls: string) => void;
   onReplaceClass: (from: string, to: string) => void;
+  /** take classes out and put others in, in one edit (the Design tab) */
+  onSetClasses: (remove: string[], add: string[]) => void;
   onGoToCode: () => void;
 }) {
   const [adding, setAdding] = useState('');
+  // Design: the look as controls that write classes; Details: the classes, box model and computed styles
+  // (remembered: someone who works in Details gets Details again on the next element)
+  const [view, setViewState] = useState<'design' | 'details'>(() => {
+    try {
+      return window.localStorage.getItem(VIEW_KEY) === 'details' ? 'details' : 'design';
+    } catch {
+      return 'design';
+    }
+  });
+  const setView = (v: 'design' | 'details') => {
+    setViewState(v);
+    try {
+      window.localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // storage blocked
+    }
+  };
   const classes = [...info.classes, ...info.off.filter((c) => !info.classes.includes(c))];
   const parent = info.ancestors.length > 1 ? info.ancestors[info.ancestors.length - 1] : null;
   const styles = Object.entries(info.styles).filter(([k, v]) => k === 'display' || k === 'position' || !DULL.has(v));
@@ -203,17 +232,41 @@ export function Inspector({
           type="button"
           onClick={onGoToCode}
           disabled={!inSource}
-          title={inSource ? 'Show it in index.html' : 'The script made this element: it isn’t in index.html'}
-          className="flex h-7 shrink-0 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted transition-colors enabled:hover:bg-raised enabled:hover:text-ink disabled:opacity-40"
+          title={inSource ? 'Show it in ' + sourceFile : readOnlyReason}
+          className="flex h-7 shrink-0 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted transition-colors enabled:hover:bg-raised enabled:hover:text-ink disabled:opacity-40 enabled:active:bg-raised enabled:active:text-ink"
         >
           <CodeIcon className="text-sm" /> Code
         </button>
-        <button type="button" onClick={onClose} aria-label="Close the inspector" className="grid size-7 shrink-0 place-items-center rounded-md text-faint hover:bg-raised hover:text-ink">
+        <button type="button" onClick={onClose} aria-label="Close the inspector" className="grid size-7 shrink-0 place-items-center rounded-md text-faint hover:bg-raised hover:text-ink active:bg-raised active:text-ink">
           <CloseIcon className="text-sm" />
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto">
+      <div role="tablist" aria-label="Inspector view" className="flex shrink-0 gap-1 border-b border-line bg-panel px-3 pb-2">
+        {(['design', 'details'] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            role="tab"
+            aria-selected={view === v}
+            onClick={() => setView(v)}
+            className={clsx(
+              'flex-1 rounded-md px-2 py-1 text-xs font-semibold transition-colors',
+              view === v ? 'bg-card text-ink shadow-xs ring-1 ring-line' : 'text-muted hover:text-ink active:text-ink',
+            )}
+          >
+            {v === 'design' ? 'Design' : 'Details'}
+          </button>
+        ))}
+      </div>
+
+      {view === 'design' && (
+        <div className="min-h-0 flex-1 overflow-auto">
+          <DesignPanel classes={info.classes} editable={inSource} readOnlyReason={readOnlyReason} onChange={onSetClasses} />
+        </div>
+      )}
+
+      <div className={clsx('min-h-0 flex-1 overflow-auto', view !== 'details' && 'hidden')}>
         {/* where it is */}
         <nav aria-label="Element path" className="flex flex-wrap items-center gap-x-1 gap-y-0.5 border-b border-line px-3 py-2 font-mono text-[11.5px] text-faint">
           {info.ancestors.map((a, i) => (
@@ -224,7 +277,7 @@ export function Inspector({
                 onClick={() => onSelect(a.trail)}
                 onPointerEnter={() => a.trail.length && onHover(a.trail)}
                 onPointerLeave={() => onHover(null)}
-                className="max-w-40 truncate rounded px-0.5 enabled:hover:bg-raised enabled:hover:text-ink"
+                className="max-w-40 truncate rounded px-0.5 enabled:hover:bg-raised enabled:hover:text-ink enabled:active:bg-raised enabled:active:text-ink"
               >
                 {a.name}
               </button>
@@ -233,16 +286,14 @@ export function Inspector({
           ))}
           <span className="font-semibold text-ink">{info.tag}</span>
           {parent && parent.trail.length > 0 && (
-            <button type="button" onClick={() => onSelect(parent.trail)} className="ml-auto rounded px-1.5 font-sans text-[11px] text-muted hover:bg-raised hover:text-ink" title="Select the parent element">
+            <button type="button" onClick={() => onSelect(parent.trail)} className="ml-auto rounded px-1.5 font-sans text-[11px] text-muted hover:bg-raised hover:text-ink active:bg-raised active:text-ink" title="Select the parent element">
               ↑ Parent
             </button>
           )}
         </nav>
 
         {!inSource && (
-          <p className="border-b border-line bg-violet-6/8 px-3 py-2 text-xs text-violet-8 dark:text-violet-3">
-            The script made this element, so it isn’t in index.html. Its classes can still be switched off here.
-          </p>
+          <p className="border-b border-line bg-violet-6/8 px-3 py-2 text-xs text-violet-8 dark:text-violet-3">{readOnlyReason}</p>
         )}
 
         {/* classes */}

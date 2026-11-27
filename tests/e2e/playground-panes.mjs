@@ -6,7 +6,7 @@ const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
   if (!ok) failures++;
 };
-const URL = 'http://localhost:5176/en/playground';
+const URL = 'http://localhost:5176/playground';
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
@@ -66,7 +66,7 @@ await p.waitForTimeout(800);
 check((await where()) === 'right', 'the layout is remembered on the next visit');
 
 // --- a narrow window: side by side isn't offered, a side-by-side choice shows stacked
-await p.setViewportSize({ width: 600, height: 900 });
+await p.setViewportSize({ width: 700, height: 900 });
 await p.waitForTimeout(400);
 check((await where()) === 'bottom', 'narrow: code on the right shows as code below (' + (await where()) + ')');
 await p.click('button[aria-label="Layout"]');
@@ -100,18 +100,17 @@ const frame = await box('iframe[title="Playground canvas"]');
 check(frame.w > frame.h, 'and it turns the phone to landscape (' + Math.round(frame.w) + '×' + Math.round(frame.h) + ')');
 await p.click('button[aria-label="Fill"]');
 
-// --- a phone: no Layout button in the header, the stacked layouts are under ⋯
+// --- a phone: one pane at a time (the Code / Preview bar), so no layouts at all, in the header or ⋯
 await p.setViewportSize({ width: 320, height: 760 });
 await p.waitForTimeout(400);
 check(!(await p.isVisible('button[aria-label="Layout"]')), 'phone: no Layout button in the header');
-const nameFits = await p.$eval('.truncate.font-semibold', (n) => n.scrollWidth <= n.clientWidth);
-check(nameFits, 'phone: "Playground" still fits beside Run, Auto-run, ⋯ and Share');
+const nameShown = await p.$eval('button[aria-haspopup="dialog"] .truncate.font-semibold', (n) => n.clientWidth >= 40);
+check(nameShown, 'phone: the example name still shows beside Run, ⋯ and Share');
 await p.click('button[aria-label="More"]');
 const phoneItems = await p.$$eval('[role="menu"][aria-label="More"] [role="menuitemradio"]', (els) => els.filter((e) => e.offsetParent).map((e) => e.textContent.trim()));
-check(phoneItems.length === 2 && /Code on top/.test(phoneItems[0]) && /Preview on top/.test(phoneItems[1]), 'phone: ⋯ has the two stacked layouts: ' + phoneItems.join(' / '));
-await p.click('[role="menu"][aria-label="More"] [role="menuitemradio"]:has-text("Preview on top")');
-await p.waitForTimeout(300);
-check((await where()) === 'bottom', 'phone: picking it puts the code below');
+check(phoneItems.length === 2 && /HTML/.test(phoneItems[0]) && /React/.test(phoneItems[1]), 'phone: ⋯ has HTML / React, and no layouts: ' + phoneItems.join(' / '));
+await p.keyboard.press('Escape');
+check((await p.isVisible('nav[aria-label="Playground view"]')) && !(await p.isVisible('[role="separator"]')), 'phone: the Code / Preview bar instead of a splitter');
 await p.setViewportSize({ width: 1440, height: 900 });
 await p.waitForTimeout(400);
 check(!(await p.isVisible('[role="menu"][aria-label="More"] [role="menuitemradio"]')), 'wide: the layouts are not under ⋯ (the Layout button has them)');

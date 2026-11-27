@@ -6,7 +6,6 @@ import { onHashLinkClick } from '../lib/location';
 import { selectTab, useActiveTab } from '../lib/tabs';
 import { BoltIcon, CodeIcon, GlobeIcon, LayersIcon, PhoneIcon, ServerIcon } from './icons';
 import { BrandIcon, isBrand } from './BrandIcon';
-import { useT } from '../lib/i18n';
 
 const ICONS: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   bolt: BoltIcon,
@@ -79,7 +78,6 @@ export function TabGroup({ tabs }: { tabs: Tab[] }) {
   const current = tabs.find((t) => t.id === active) ?? tabs[0];
   const root = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLDivElement>(null);
-  const t = useT();
   const compact = useCompactTabs(list);
   const { intro, steps } = toSteps(current.blocks);
 
@@ -93,7 +91,7 @@ export function TabGroup({ tabs }: { tabs: Tab[] }) {
   return (
     <div ref={root} className="mt-8 mb-4">
       <div className="sticky top-16 z-20 -mx-4 bg-page/90 px-4 backdrop-blur-md sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
-        <div ref={list} role="tablist" aria-label={t('Choose your setup')} className="flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none]">
+        <div ref={list} role="tablist" aria-label="Choose your setup" className="flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none]">
           {tabs.map((t) => {
             // icon=vite, nextjs, react, html5…: the setup's own logo; else one of the site's icons
             const brand = isBrand(t.icon) ? t.icon : null;
@@ -124,12 +122,12 @@ export function TabGroup({ tabs }: { tabs: Tab[] }) {
                   // an equal share of the bar each (never less than its content)
                   'group relative flex flex-1 items-center justify-center gap-2 whitespace-nowrap px-3 py-3.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-gold',
                   'after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-full after:transition-colors',
-                  on ? 'text-ink after:bg-gold' : 'text-muted hover:text-ink after:bg-transparent hover:after:bg-line',
+                  on ? 'text-ink after:bg-gold' : 'text-muted hover:text-ink after:bg-transparent hover:after:bg-line active:text-ink',
                 )}
               >
                 {brand ? (
                   // in color on the chosen tab, gray on the others (until hovered)
-                  <BrandIcon brand={brand} className={clsx('text-base transition', !on && 'opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0')} />
+                  <BrandIcon brand={brand} className={clsx('text-base transition', !on && 'opacity-60 grayscale group-hover:opacity-100 group-hover:grayscale-0 group-active:opacity-100')} />
                 ) : (
                   <Icon className={clsx('text-base', on ? 'text-accent' : 'text-faint')} />
                 )}
@@ -155,8 +153,8 @@ export function TabGroup({ tabs }: { tabs: Tab[] }) {
               <a
                 href={'#' + heading.id}
                 onClick={onHashLinkClick}
-                aria-label={t('Step') + ' ' + (n + 1)}
-                className="absolute left-0 top-0 grid size-8 place-items-center rounded-full bg-[#f5ead2] dark:bg-logo font-mono text-sm font-semibold text-bronze dark:text-gold ring-4 ring-page transition hover:ring-gold/30"
+                aria-label={'Step ' + (n + 1)}
+                className="absolute left-0 top-0 grid size-8 place-items-center rounded-full bg-[#f5ead2] dark:bg-logo font-mono text-sm font-semibold text-bronze dark:text-gold ring-4 ring-page transition hover:ring-gold/30 active:ring-gold/30"
               >
                 {n + 1}
               </a>

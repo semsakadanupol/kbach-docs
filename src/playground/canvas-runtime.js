@@ -24,6 +24,8 @@
     }
   }
 
+  // (storage: canvas-storage.js, the first script in the <head>, gives the page one)
+
   // --- console ---------------------------------------------------------------
   function show(value, depth) {
     if (typeof value === 'string') return depth ? JSON.stringify(value) : value;
@@ -197,7 +199,28 @@
   // always sees the OS setting, so the canvas rewrites those media rules in its
   // own sheets (kbach.css with darkMode 'media', and the reader's inline
   // <style>s) to match the button. The text the reader sees is untouched.
+  // An HTML page's CDN script (@kbach/browser) adds its rules later, one by one
+  // with insertRule (no mutation shows that) and its color variables as a
+  // <style>'s text: both are caught, so they follow the button too.
+  // the moon button's state this page was made with (canvas.ts puts the dark class on <html>)
+  var previewDark = document.documentElement.classList.contains('dark');
   var schemeQuery = /prefers-color-scheme\s*:\s*(dark|light)/;
+  var schemeQueued = false;
+  function queueScheme() {
+    if (schemeQueued) return;
+    schemeQueued = true;
+    requestAnimationFrame(function () {
+      schemeQueued = false;
+      applyScheme();
+    });
+  }
+  var insertRule = CSSStyleSheet.prototype.insertRule;
+  CSSStyleSheet.prototype.insertRule = function () {
+    var at = insertRule.apply(this, arguments);
+    queueScheme();
+    return at;
+  };
+  new MutationObserver(queueScheme).observe(document.head, { childList: true, characterData: true, subtree: true });
   function applyScheme() {
     var dark = document.documentElement.classList.contains('dark');
     for (var i = 0; i < document.styleSheets.length; i++) {
@@ -506,12 +529,27 @@
       reapplyToggles();
       applyScheme(); // the reader's inline <style>s may be new
     } else if (d.type === 'dark') {
+      // Only a change of the moon button: the page also gets the button's state when it's ready
+      // (in case it changed while loading), and that mustn't undo a mode the page's own script
+      // chose meanwhile (Kbach.setMode('dark') in an HTML page, setGlobalThemeMode in React).
+      if (!!d.on === previewDark) return;
+      previewDark = !!d.on;
       // the class and data-theme for darkMode 'class' and 'attribute'; the
       // prefers-color-scheme rules for 'media' (applyScheme)
       document.documentElement.classList.toggle('dark', !!d.on);
       if (d.on) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
       applyScheme();
+      // Kbach's dark mode store follows: @kbach/react's in React mode (kbachModule.ts listens),
+      // the CDN script's in an HTML page (window.Kbach). Its saved mode too, for a script that
+      // hasn't loaded yet (canvas-storage.js set the first one).
+      window.dispatchEvent(new CustomEvent('kbach-preview-dark', { detail: !!d.on }));
+      try {
+        window.localStorage.setItem('kbach-theme', d.on ? 'dark' : 'light');
+      } catch (e) {
+        // no storage
+      }
+      if (window.Kbach && typeof window.Kbach.setMode === 'function') window.Kbach.setMode(d.on ? 'dark' : 'light');
     }
     else if (d.type === 'inspect') {
       inspecting = !!d.on;
@@ -541,22 +579,50 @@
       }
       select(selected);
     } else if (d.type === 'eval' && typeof d.code === 'string') evaluate(d.code);
+    // what React drew into #root, for the switch from React to HTML (convert.ts)
+    else if (d.type === 'snapshot') {
+      var root = document.getElementById('root');
+      post({ type: 'snapshot', html: root ? root.innerHTML : null });
+    }
   });
 
   // --- scroll: the page remembers it, so a re-run lands where the reader was ---
+  // The page can grow after it opens: fonts and images take their size (load), and an HTML page's
+  // CDN script styles it once its engine has loaded (Kbach.ready), after the page itself. So the
+  // spot is set again at each of those, and until then the scroll the browser clamped to a shorter
+  // page isn't reported: the page would remember that instead (a re-run landed higher each time).
+  // The reader's own scrolling (wheel, touch, a key, a click) ends it at once.
   var restoreTo = (me.getAttribute('data-scroll') || '').split(',').map(Number);
+  var restoring = restoreTo.length === 2 && !!(restoreTo[0] || restoreTo[1]);
+  var waitsFor = 1 + (window.Kbach && window.Kbach.ready ? 1 : 0); // load, and the CDN script
   var scrollPending = false;
+  function reportScroll() {
+    post({ type: 'scroll', x: scrollX, y: scrollY });
+  }
+  function stopRestoring() {
+    if (!restoring) return;
+    restoring = false;
+    reportScroll();
+  }
+  ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(function (type) {
+    window.addEventListener(type, stopRestoring, { passive: true, capture: true });
+  });
   window.addEventListener('scroll', function () {
-    if (scrollPending) return;
+    if (restoring || scrollPending) return;
     scrollPending = true;
     requestAnimationFrame(function () {
       scrollPending = false;
-      post({ type: 'scroll', x: scrollX, y: scrollY });
+      reportScroll();
     });
   }, { passive: true });
   function restoreScroll() {
     // instant: a page with scroll-smooth would otherwise glide there from the top on every re-run
-    if (restoreTo.length === 2 && (restoreTo[0] || restoreTo[1])) window.scrollTo({ left: restoreTo[0], top: restoreTo[1], behavior: 'instant' });
+    if (restoring) window.scrollTo({ left: restoreTo[0], top: restoreTo[1], behavior: 'instant' });
+  }
+  /** One of the things the page waits for is done: the spot again, and the end once all are. */
+  function grown() {
+    restoreScroll();
+    if (--waitsFor <= 0) stopRestoring();
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -566,9 +632,11 @@
     applyScheme();
     post({ type: 'ready' });
   });
-  // again once fonts and images have their size (the page can be taller by then)
-  window.addEventListener('load', function () {
-    restoreScroll();
-    restoreTo = [];
-  });
+  window.addEventListener('load', grown);
+  if (window.Kbach && window.Kbach.ready) {
+    window.Kbach.ready.then(
+      function () { requestAnimationFrame(grown); },
+      function () { grown(); },
+    );
+  }
 })();

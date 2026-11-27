@@ -6,7 +6,7 @@ const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
   if (!ok) failures++;
 };
-const URL = 'http://localhost:5176/en/playground';
+const URL = 'http://localhost:5176/playground';
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
@@ -196,7 +196,7 @@ await p.keyboard.press('Delete');
 s = await code();
 check(skeletonOk(s) && /\n\s*<body>\n/.test(s), 'deleting the whole <body …> line leaves <body> (' + JSON.stringify(/[^\n]*\n[^\n]*<body[^\n]*\n[^\n]*/.exec(s)?.[0]) + ')');
 
-// --- Clear all: empties index.html and the script, Undo brings them back
+// --- Clear all: empties index.html and the script, resets kbach.config.js, Undo brings them back
 await p.click('button[aria-label="Back"]').catch(() => {});
 await p.goto(URL, { waitUntil: 'networkidle' });
 await p.evaluate(() => localStorage.clear());
@@ -208,8 +208,16 @@ await p.click(clear);
 await p.waitForTimeout(800);
 s = await code();
 const scriptAfter = await p.evaluate(() => localStorage.getItem('kbach-playground-script'));
-check(skeletonOk(s) && !bodyOf(s).trim() && /<title>/.test(headOf(s)), 'Clear all leaves the skeleton (with its meta tags and title) and an empty body');
+// (an empty body, but for the tag that loads script.js: a plain page loads its script, 2026-11-27)
+const scriptTag = '<script type="module" src="script.js"></script>';
+check(skeletonOk(s) && bodyOf(s).includes(scriptTag) && !bodyOf(s).replace(scriptTag, '').trim() && /<title>/.test(headOf(s)), 'Clear all leaves the skeleton (with its meta tags and title) and an empty body, but for the tag that loads script.js');
 check(scriptAfter === '' && (await inCanvas(() => document.body.children.length)) === 0, 'it empties the script too, and the page');
+// kbach.config.js goes back to the default too (2026-11-27: the example's brand colors and keyframes stayed behind)
+// kbach.config.js goes back to the default too (2026-11-27: the example's brand colors and keyframes
+// stayed behind), and the page still loads it and the CDN script
+const configAfter = (await p.evaluate(() => localStorage.getItem('kbach-playground-config'))) ?? '';
+const codeAfter = (await p.evaluate(() => localStorage.getItem('kbach-playground-code'))) ?? '';
+check(/window\.kbachConfig = \{/.test(configAfter) && !/amber-6/.test(configAfter) && /REPLACES a whole section of the defaults/.test(configAfter) && codeAfter.includes('<script src="kbach.config.js"></script>') && codeAfter.includes('cdn.jsdelivr.net/npm/@kbach/browser'), 'and puts kbach.config.js back to the default (no example colors left), the page still loading it and the CDN script');
 check(await p.$eval(clear, (b) => b.disabled), 'with nothing left, Clear all is greyed out');
 await p.keyboard.type('<p>typed</p>');
 await p.waitForTimeout(600);

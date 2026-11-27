@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { clsx } from '@kbach/react';
-import type { EditorStatus } from './KbachEditor';
-import { CheckIcon, DotsIcon, DownloadIcon, ExternalIcon, HistoryIcon, KeyboardIcon, PanesIcon, ResetIcon, SparklesIcon } from './icons';
+import type { EditorHandle, EditorStatus } from './KbachEditor';
+import type { PlaygroundMode } from '../playground/share';
+import { CheckIcon, CodeIcon, DotsIcon, DownloadIcon, ExternalIcon, FileIcon, HistoryIcon, KeyboardIcon, PanesIcon, PlayIcon, ResetIcon, SparklesIcon } from './icons';
 
 // The playground's smaller pieces: file tabs, the console, the examples
 // menu, the editor's status bar, the drag handle between panes, and the
@@ -18,7 +19,7 @@ export function FileTab({ active, onClick, badge, children, title }: { active: b
       // VS Code's editor tabs: the open one joins the editor, a blue line on top
       className={clsx(
         'relative flex shrink-0 items-center gap-1.5 border-r border-(--ed-tabs) px-1.5 font-sans text-[13px] transition-colors @min-[28rem]:px-2 @min-[50rem]:px-3',
-        active ? 'bg-(--ed-bg) text-(--ed-tab-on-fg)' : 'bg-(--ed-tab) text-(--ed-tab-fg) hover:text-(--ed-icon-hover)',
+        active ? 'bg-(--ed-bg) text-(--ed-tab-on-fg)' : 'bg-(--ed-tab) text-(--ed-tab-fg) hover:text-(--ed-icon-hover) active:text-(--ed-icon-hover)',
       )}
     >
       {badge}
@@ -104,7 +105,7 @@ export function ConsolePanel({
               </span>
               <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">{l.text}</span>
               {l.line ? (
-                <button type="button" onClick={() => onJump(l.line!)} className="shrink-0 text-[#7f9198] underline-offset-2 hover:text-[#cfd6d8] hover:underline" title="Go to this line">
+                <button type="button" onClick={() => onJump(l.line!)} className="shrink-0 text-[#7f9198] underline-offset-2 hover:text-[#cfd6d8] hover:underline active:text-[#cfd6d8] active:underline" title="Go to this line">
                   {file}:{l.line}
                 </button>
               ) : null}
@@ -128,7 +129,7 @@ export function ConsolePanel({
           autoComplete="off"
           className="h-9 min-w-0 flex-1 bg-transparent font-mono text-[12.5px] text-[#e3ded1] outline-none placeholder:text-[#5f7077]"
         />
-        <button type="button" onClick={onClear} title="Clear (Ctrl+L)" className="rounded px-2 py-0.5 text-xs text-[#9aa8ae] hover:bg-white/10 hover:text-[#ece6d8]">
+        <button type="button" onClick={onClear} title="Clear (Ctrl+L)" className="rounded px-2 py-0.5 text-xs text-[#9aa8ae] hover:bg-white/10 hover:text-[#ece6d8] active:bg-white/10 active:text-[#ece6d8]">
           Clear
         </button>
       </div>
@@ -181,7 +182,7 @@ export function StatusBar({
         type="button"
         onClick={onProblems}
         title={problems ? 'Show the problems' : 'No problems'}
-        className={clsx('flex items-center gap-1 rounded px-1 transition-colors hover:bg-black/10', problems && 'font-semibold')}
+        className={clsx('flex items-center gap-1 rounded px-1 transition-colors hover:bg-black/10 active:bg-black/10', problems && 'font-semibold')}
       >
         <span aria-hidden="true">⚠</span>
         {status?.warnings ?? 0}
@@ -196,7 +197,7 @@ export function StatusBar({
           type="button"
           onClick={onFixAll}
           title="Replace each Tailwind CSS class with its Kbach name"
-          className="shrink-0 rounded bg-black/15 px-1.5 font-sans font-semibold whitespace-nowrap transition-colors hover:bg-black/25"
+          className="shrink-0 rounded bg-black/15 px-1.5 font-sans font-semibold whitespace-nowrap transition-colors hover:bg-black/25 active:bg-black/25"
         >
           Fix {fixes === 1 ? '1 class' : 'all ' + fixes}
         </button>
@@ -205,7 +206,7 @@ export function StatusBar({
         <span role="status" className="flex min-w-0 items-center gap-2 font-sans @max-[40rem]:mr-auto">
           <span className={clsx('min-w-0 truncate', notice.kind === 'error' ? 'rounded bg-[#c72e0f] px-1.5 font-semibold text-white' : '')}>{notice.text}</span>
           {notice.action && (
-            <button type="button" onClick={notice.action.run} className="shrink-0 rounded bg-black/15 px-1.5 font-semibold hover:bg-black/25">
+            <button type="button" onClick={notice.action.run} className="shrink-0 rounded bg-black/15 px-1.5 font-semibold hover:bg-black/25 active:bg-black/25">
               {notice.action.label}
             </button>
           )}
@@ -218,12 +219,12 @@ export function StatusBar({
         type="button"
         onClick={onFormat}
         title="Format, and sort the classes (Shift+Alt+F)"
-        className={clsx('flex items-center gap-1 rounded px-1 font-sans transition-colors hover:bg-black/10 @max-[40rem]:ml-auto', notice?.action && '@max-[40rem]:hidden')}
+        className={clsx('flex items-center gap-1 rounded px-1 font-sans transition-colors hover:bg-black/10 @max-[40rem]:ml-auto active:bg-black/10', notice?.action && '@max-[40rem]:hidden')}
       >
         <SparklesIcon className="text-[12px]" /> Format
       </button>
       )}
-      <button type="button" onClick={onShortcuts} aria-label="Keyboard shortcuts" title="Keyboard shortcuts" className="grid size-5 place-items-center rounded transition-colors hover:bg-black/10">
+      <button type="button" onClick={onShortcuts} aria-label="Keyboard shortcuts" title="Keyboard shortcuts" className="grid size-5 place-items-center rounded transition-colors hover:bg-black/10 active:bg-black/10">
         <KeyboardIcon className="text-[13px]" />
       </button>
     </div>
@@ -308,15 +309,21 @@ export function Splitter({
 
 // --- keyboard shortcuts --------------------------------------------------------------
 const SHORTCUTS: [string, string][] = [
-  ['Ctrl+Space', 'Suggest classes, tags and names'],
+  ['Ctrl+Shift+P, F1', 'Command palette: every command, by name'],
+  ['Ctrl+P', 'Go to a file'],
+  ['Ctrl+Space', 'Suggest classes, tags, names and imports'],
+  ['Ctrl+Shift+Space', 'Show the parameters of the call'],
+  ['F12, Ctrl+click', 'Go to the definition'],
+  ['F2', 'Rename everywhere in the file'],
   ['Tab', 'Expand an Emmet abbreviation (ul>li*3), else indent'],
   ['Ctrl+Shift+A', 'Wrap the selection in an Emmet abbreviation'],
   ['Shift+Alt+F', 'Format, and sort the classes'],
   ['Ctrl+Enter, Ctrl+S', 'Run the page again'],
   ['Ctrl+F', 'Find and replace'],
-  ['Ctrl+Alt+G', 'Go to line'],
+  ['Ctrl+G', 'Go to line'],
   ['Ctrl+D', 'Select the next match too'],
-  ['Ctrl+click', 'Add a cursor'],
+  ['Ctrl+Shift+L', 'Select every match'],
+  ['Alt+click, Ctrl+Alt+↑ / ↓', 'Add a cursor'],
   ['Alt+↑ / Alt+↓', 'Move the line'],
   ['Shift+Alt+↑ / ↓', 'Copy the line'],
   ['Ctrl+Shift+K', 'Delete the line'],
@@ -372,12 +379,16 @@ export function ShortcutSheet({ onClose }: { onClose: () => void }) {
  * from an earlier visit (every visit starts from the first example).
  */
 export function MoreMenu({
+  onBlank,
   onOpenTab,
   onDownload,
   onReset,
   onRestore,
   layout,
+  kind,
 }: {
+  /** an empty page of the kind open now (at the top: the quickest way to start from nothing) */
+  onBlank: () => void;
   /** only in a narrow header, which has no room for the full-screen button */
   onOpenTab: () => void;
   onDownload: () => void;
@@ -386,6 +397,8 @@ export function MoreMenu({
   onRestore: (() => void) | null;
   /** in a phone-wide header (no room for the Layout button): its two stacked layouts, here */
   layout?: { shown: PaneLayout; onChange: (l: PaneLayout) => void };
+  /** HTML or React: in the header from 40rem, here below that */
+  kind?: { mode: PlaygroundMode; onChange: (m: PlaygroundMode) => void };
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -399,7 +412,7 @@ export function MoreMenu({
     document.addEventListener('pointerdown', onDown);
     return () => document.removeEventListener('pointerdown', onDown);
   }, [open]);
-  const item = 'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[13px] text-ink outline-none hover:bg-raised focus-visible:bg-raised';
+  const item = 'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[13px] text-ink outline-none hover:bg-raised focus-visible:bg-raised active:bg-raised';
   const act = (fn: () => void) => () => {
     fn();
     setOpen(false);
@@ -411,9 +424,9 @@ export function MoreMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="More"
-        title="Open in a new tab, download, reset"
+        title="New blank page, open in a new tab, download, reset"
         onClick={() => setOpen((o) => !o)}
-        className={clsx('grid size-8 place-items-center rounded-lg text-[16px] transition-colors', open ? 'bg-raised text-ink' : 'text-muted hover:bg-raised hover:text-ink')}
+        className={clsx('grid size-8 place-items-center rounded-lg text-[16px] transition-colors', open ? 'bg-raised text-ink' : 'text-muted hover:bg-raised hover:text-ink active:bg-raised active:text-ink')}
       >
         <DotsIcon />
       </button>
@@ -429,11 +442,15 @@ export function MoreMenu({
           }}
           className="absolute top-full right-0 z-20 mt-1.5 w-64 rounded-xl border border-line bg-card p-1 shadow-xl"
         >
-          <button ref={first} type="button" role="menuitem" onClick={act(onOpenTab)} className={item}>
+          <button ref={first} type="button" role="menuitem" onClick={act(onBlank)} className={item}>
+            <FileIcon className="shrink-0 text-faint" /> New blank page
+          </button>
+          <div className="my-1 border-t border-line" />
+          <button type="button" role="menuitem" onClick={act(onOpenTab)} className={item}>
             <ExternalIcon className="shrink-0 text-faint" /> Open in a new tab
           </button>
           <button type="button" role="menuitem" onClick={act(onDownload)} className={item}>
-            <DownloadIcon className="shrink-0 text-faint" /> Download as an HTML file
+            <DownloadIcon className="shrink-0 text-faint" /> Download as a .zip
           </button>
           {layout && (
             <div className="@min-[30rem]:hidden">
@@ -442,6 +459,18 @@ export function MoreMenu({
                 <button key={l.id} type="button" role="menuitemradio" aria-checked={layout.shown === l.id} onClick={act(() => layout.onChange(l.id))} className={item}>
                   <PanesIcon code={l.id} className="shrink-0 text-faint" /> <span className="flex-1">{l.label}</span>
                   {layout.shown === l.id && <CheckIcon className="shrink-0 text-accent" />}
+                </button>
+              ))}
+            </div>
+          )}
+          {kind && (
+            <div className="@min-[40rem]:hidden" role="group" aria-label="Kind of page">
+              <div className="my-1 border-t border-line" />
+              {(['html', 'react'] as const).map((m) => (
+                <button key={m} type="button" role="menuitemradio" aria-checked={kind.mode === m} onClick={act(() => kind.onChange(m))} className={item}>
+                  <CodeIcon className={clsx('shrink-0', m === 'react' ? 'text-[#61dafb]' : 'text-faint')} />
+                  <span className="flex-1">{m === 'html' ? 'HTML page' : 'React app (JSX)'}</span>
+                  {kind.mode === m && <CheckIcon className="shrink-0 text-accent" />}
                 </button>
               ))}
             </div>
@@ -509,7 +538,7 @@ export function LayoutMenu({ layout, shown, narrow, onChange }: { layout: PaneLa
         aria-label="Layout"
         title="Layout: where the code and the preview go"
         onClick={() => setOpen((o) => !o)}
-        className={clsx('grid size-8 place-items-center rounded-lg text-[16px] transition-colors', open ? 'bg-raised text-ink' : 'text-muted hover:bg-raised hover:text-ink')}
+        className={clsx('grid size-8 place-items-center rounded-lg text-[16px] transition-colors', open ? 'bg-raised text-ink' : 'text-muted hover:bg-raised hover:text-ink active:bg-raised active:text-ink')}
       >
         <PanesIcon code={shown} />
       </button>
@@ -546,7 +575,7 @@ export function LayoutMenu({ layout, shown, narrow, onChange }: { layout: PaneLa
                   onChange(l.id);
                   setOpen(false);
                 }}
-                className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[13px] text-ink outline-none hover:bg-raised focus-visible:bg-raised disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent"
+                className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[13px] text-ink outline-none hover:bg-raised focus-visible:bg-raised disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent active:bg-raised disabled:active:bg-transparent"
               >
                 <PanesIcon code={l.id} className="shrink-0 text-[16px] text-faint" />
                 <span className="flex-1">{l.label}</span>
@@ -570,12 +599,71 @@ export function Switch({ on, onChange, label, title }: { on: boolean; onChange: 
       aria-checked={on}
       onClick={() => onChange(!on)}
       title={title}
-      className="flex h-8 shrink-0 items-center gap-1 rounded-lg px-1 text-[12px] font-medium text-muted transition-colors hover:bg-raised hover:text-ink @min-[30rem]:gap-1.5 @min-[30rem]:px-1.5"
+      className="flex h-7 shrink-0 items-center gap-1 rounded-md px-1 text-[12px] font-medium text-muted transition-colors hover:bg-raised hover:text-ink @min-[30rem]:gap-1.5 @min-[30rem]:px-1.5 active:bg-raised active:text-ink"
     >
       <span className={clsx('relative h-4 w-7 shrink-0 rounded-full transition-colors', on ? 'bg-gold' : 'bg-line')}>
         <span className={clsx('absolute top-0.5 size-3 rounded-full bg-white shadow transition-transform', on ? 'translate-x-3.5' : 'translate-x-0.5')} />
       </span>
       {label}
     </button>
+  );
+}
+
+/** Keys a phone's keyboard keeps a tap or two away, for HTML, JSX and classes. */
+const PHONE_KEYS = ['<', '>', '/', '"', '=', '-', ':', '{', '}', '(', ')', '.'];
+
+/**
+ * The playground on a phone (added 2026-11-26): Code or Preview fill the screen, picked
+ * here; while the code shows, a row of keys a phone keyboard hides (Tab expands Emmet). The
+ * keys keep the editor's focus (pointerdown is cancelled), so the keyboard stays up.
+ */
+export function PhoneBar({
+  view,
+  onView,
+  problems,
+  errors,
+  editor,
+}: {
+  view: 'code' | 'preview';
+  onView: (v: 'code' | 'preview') => void;
+  /** unknown classes and config errors, on the Code button */
+  problems: number;
+  /** console errors, on the Preview button */
+  errors: number;
+  /** the editor the keys type into, or null to hide them */
+  editor: (() => EditorHandle | null | undefined) | null;
+}) {
+  const keep = (e: ReactPointerEvent) => e.preventDefault();
+  const key = 'h-10 min-w-10 shrink-0 rounded-lg bg-card px-2 font-mono text-[15px] text-ink shadow-xs ring-1 ring-line active:bg-raised';
+  const tab = (on: boolean) =>
+    clsx(
+      'flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors',
+      on ? 'bg-card text-ink shadow-sm ring-1 ring-line' : 'text-muted active:bg-card/60',
+    );
+  const badge = (n: number, danger: boolean) =>
+    n > 0 && <span className={clsx('min-w-5 rounded-full px-1.5 text-center font-mono text-[11px] leading-5', danger ? 'bg-red-6 text-white' : 'bg-amber-6/20 text-amber-9 dark:text-amber-3')}>{n}</span>;
+  return (
+    <div className="shrink-0 pt-2 pb-[env(safe-area-inset-bottom)]">
+      {editor && (
+        <div role="toolbar" aria-label="Keys" className="mb-2 flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
+          <button type="button" onPointerDown={keep} onClick={() => editor()?.tab()} className={clsx(key, 'font-sans text-[13px] font-semibold')} aria-label="Tab (expands Emmet)">
+            Tab
+          </button>
+          {PHONE_KEYS.map((k) => (
+            <button key={k} type="button" onPointerDown={keep} onClick={() => editor()?.insert(k)} className={key} aria-label={'Type ' + k}>
+              {k}
+            </button>
+          ))}
+        </div>
+      )}
+      <nav aria-label="Playground view" className="grid grid-cols-2 gap-1 rounded-2xl bg-raised p-1">
+        <button type="button" aria-pressed={view === 'code'} onClick={() => onView('code')} className={tab(view === 'code')}>
+          <CodeIcon /> Code {badge(problems, false)}
+        </button>
+        <button type="button" aria-pressed={view === 'preview'} onClick={() => onView('preview')} className={tab(view === 'preview')}>
+          <PlayIcon className="text-[13px]" /> Preview {badge(errors, true)}
+        </button>
+      </nav>
+    </div>
   );
 }

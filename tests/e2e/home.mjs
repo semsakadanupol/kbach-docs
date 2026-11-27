@@ -1,4 +1,4 @@
-// The home page (/en): what's on it, that what it shows is the engine's real output, that it fits
+// The home page (/): what's on it, that what it shows is the engine's real output, that it fits
 // every width, and where its links go.
 import { chromium, firefox } from 'playwright';
 import { createRequire } from 'node:module';
@@ -14,7 +14,7 @@ const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, permiss
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => errors.push(e.message));
-await p.goto(BASE + '/en', { waitUntil: 'networkidle' });
+await p.goto(BASE + '/', { waitUntil: 'networkidle' });
 await p.waitForTimeout(600);
 
 check((await p.title()).startsWith('Kbach'), 'the home page has its own title (' + (await p.title()) + ')');
@@ -115,17 +115,17 @@ for (const href of links) {
 }
 check(bad.length === 0 && links.length > 20, links.length + ' internal links, all real pages' + (bad.length ? ': broken ' + bad.join(' ') : ''));
 
-// Get started goes to the introduction, which is a docs page with the sidebar
-await p.click('a:has-text("Get started")');
+// the hero's Get started goes to the introduction, which is a docs page with the sidebar
+await p.click('main a:has-text("Get started")');
 await p.waitForTimeout(500);
-check(new URL(p.url()).pathname === '/en/introduction' && (await p.$('aside nav[aria-label="Documentation"]')) !== null, 'Get started opens /introduction, with the sidebar');
+check(new URL(p.url()).pathname === '/introduction' && (await p.$('aside nav[aria-label="Documentation"]')) !== null, 'Get started opens /introduction, with the sidebar');
 const crumb = await p.$eval('main article > div:first-child', (e) => e.textContent);
 check(crumb.includes('Getting started') && crumb.includes('Introduction'), 'a doc page names its section and page above the title: ' + crumb);
 
 // fits every width, in both themes
 for (const [w, scheme] of [[320, 'light'], [390, 'dark'], [768, 'light'], [1024, 'dark'], [1440, 'light'], [1920, 'dark']]) {
   const t = await b.newPage({ viewport: { width: w, height: 900 }, colorScheme: scheme });
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   await t.waitForTimeout(300);
   const m = await t.evaluate(() => ({
     over: document.documentElement.scrollWidth - innerWidth,
@@ -140,7 +140,7 @@ for (const [w, scheme] of [[320, 'light'], [390, 'dark'], [768, 'light'], [1024,
 // dark mode details (each was a reported bug)
 {
   const t = await b.newPage({ viewport: { width: 1920, height: 1000 }, colorScheme: 'dark' });
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   await t.waitForTimeout(400);
   const d = await t.evaluate(() => {
     const grad = getComputedStyle(document.querySelector('h1 span')).backgroundImage;
@@ -155,7 +155,7 @@ for (const [w, scheme] of [[320, 'light'], [390, 'dark'], [768, 'light'], [1024,
 // a preview's Code tab wraps long class lists, and is as tall as its code
 {
   const t = await b.newPage({ viewport: { width: 1440, height: 900 } });
-  await t.goto(BASE + '/en/variants', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/variants', { waitUntil: 'networkidle' });
   await t.waitForTimeout(500);
   const box = await t.evaluateHandle(() => [...document.querySelectorAll('[data-preview-canvas]')].find((c) => c.textContent.includes('Odd rows')).parentElement);
   await (await box.$('button[role="tab"]:has-text("Code")')).click();
@@ -174,10 +174,10 @@ for (const [w, scheme] of [[320, 'light'], [390, 'dark'], [768, 'light'], [1024,
 // the hero has no demo: trying classes is the playground's job
 {
   const t = await b.newPage({ viewport: { width: 1440, height: 900 } });
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   const hero = await t.evaluate(() => {
     const section = document.querySelector('main section');
-    return { demo: !!section.querySelector('[data-demo], [aria-label="Accent"]'), playground: !!section.querySelector('a[href="/en/playground"]') };
+    return { demo: !!section.querySelector('[data-demo], [aria-label="Accent"]'), playground: !!section.querySelector('a[href="/playground"]') };
   });
   check(!hero.demo && hero.playground, 'the hero has no demo panel, and links to the playground ' + JSON.stringify(hero));
   await t.close();
@@ -186,7 +186,7 @@ for (const [w, scheme] of [[320, 'light'], [390, 'dark'], [768, 'light'], [1024,
 // docs code blocks follow the theme: paper with deep colors in light, slate in dark
 for (const scheme of ['light', 'dark']) {
   const t = await b.newPage({ viewport: { width: 1280, height: 900 }, colorScheme: scheme });
-  await t.goto(BASE + '/en/dark-mode', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/dark-mode', { waitUntil: 'networkidle' });
   const c = await t.evaluate(() => {
     const g = document.querySelector('main .group\\/code');
     const lum = (rgb) => {
@@ -205,7 +205,7 @@ for (const scheme of ['light', 'dark']) {
 // the docs' title light fades out inside the column on a phone (no hard edges)
 {
   const t = await b.newPage({ viewport: { width: 460, height: 400 }, colorScheme: 'dark' });
-  await t.goto(BASE + '/en/layout', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/layout', { waitUntil: 'networkidle' });
   const glow = await t.evaluate(() => getComputedStyle(document.querySelector('main#content > div[aria-hidden]')).backgroundImage);
   check(/radial-gradient\(50% 80% at 50% 0%/.test(glow), 'the title light is sized by the column, so it fades out before the edges (' + glow.slice(0, 60) + ')');
   await t.close();
@@ -215,7 +215,7 @@ for (const scheme of ['light', 'dark']) {
 for (const scheme of ['light', 'dark']) {
   const t = await b.newPage({ viewport: { width: 1280, height: 900 }, colorScheme: scheme });
   const tiles = [];
-  for (const path of ['/en', '/en/introduction', '/en/installation']) {
+  for (const path of ['/', '/introduction', '/installation']) {
     await t.goto(BASE + path, { waitUntil: 'networkidle' });
     tiles.push(...(await t.evaluate(() => [...document.querySelectorAll('[class*="dark:bg-logo"]')].filter((e) => e.offsetParent && !e.matches('section')).map((e) => getComputedStyle(e).backgroundColor))));
   }
@@ -240,7 +240,7 @@ for (const scheme of ['light', 'dark']) {
       };
     });
   const phone = await b.newPage({ viewport: { width: 390, height: 800 } });
-  await phone.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await phone.goto(BASE + '/', { waitUntil: 'networkidle' });
   const onPhone = await place(phone);
   check(onPhone.stacked && onPhone.inView, '390px: the three outputs one under another, inside the window ' + JSON.stringify(onPhone));
   // each output has its own arrow down into it (the user asked where the bottom two's were)
@@ -256,7 +256,7 @@ for (const scheme of ['light', 'dark']) {
   // a class never breaks across lines (dark:bg-|gray-10 did on a phone), down to 320px wide
   for (const w of [320, 390]) {
     const small = await b.newPage({ viewport: { width: w, height: 800 } });
-    await small.goto(BASE + '/en', { waitUntil: 'networkidle' });
+    await small.goto(BASE + '/', { waitUntil: 'networkidle' });
     const broken = await small.evaluate(() =>
       [...document.querySelectorAll('[data-word] code')]
         // one line: no taller than 1.6 times its font size (a highlighted md: inside makes two boxes, even on one line)
@@ -267,7 +267,7 @@ for (const scheme of ['light', 'dark']) {
     await small.close();
   }
   const t = await b.newPage({ viewport: { width: 1440, height: 900 } });
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   await t.waitForTimeout(900);
   const onDesktop = await place(t);
   check(onDesktop.row && onDesktop.inView, '1440px: the three outputs side by side ' + JSON.stringify(onDesktop));
@@ -316,7 +316,7 @@ for (const scheme of ['light', 'dark']) {
   });
   check(Math.abs(tree.pill) <= 1 && JSON.stringify(tree.arrows) === JSON.stringify(tree.outputs) && tree.figureMargins.every((m) => m === '0px 0px'), '1440px: the class is centered, each arrow lands on its output, no figure margins ' + JSON.stringify(tree));
   // the docs pages and the 404 page start their columns under the header's edges too
-  for (const path of ['/en/installation', '/en/nope']) {
+  for (const path of ['/installation', '/nope']) {
     const d = await b.newPage({ viewport: { width: 1440, height: 900 } });
     await d.goto(BASE + path, { waitUntil: 'networkidle' });
     const r = await d.evaluate(() => {
@@ -333,7 +333,7 @@ for (const scheme of ['light', 'dark']) {
   {
     const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
     const footers = [];
-    for (const path of ['/en/installation', '/en/nope']) {
+    for (const path of ['/installation', '/nope']) {
       await page.goto(BASE + path, { waitUntil: 'networkidle' });
       footers.push(await page.evaluate(() => { const r = document.querySelector('footer').getBoundingClientRect(); return Math.round(r.left) + '-' + Math.round(r.right); }));
     }
@@ -363,7 +363,7 @@ for (const scheme of ['light', 'dark']) {
 {
   const ctxR = await b.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   const t = await ctxR.newPage();
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   const r = await t.evaluate(() => ({
     hidden: [...document.querySelectorAll('[data-reveal]')].filter((e) => getComputedStyle(e).opacity !== '1').length,
     animating: [...document.querySelectorAll('[class*="animate-[kbd-"]')].filter((e) => getComputedStyle(e).animationName !== 'none').length,
@@ -376,8 +376,8 @@ for (const scheme of ['light', 'dark']) {
 // the sidebar: hovering a link nudges its text, not its border (the border is part of the line)
 {
   const t = await b.newPage({ viewport: { width: 1440, height: 900 } });
-  await t.goto(BASE + '/en/variants', { waitUntil: 'networkidle' });
-  const link = 'aside nav[aria-label="Documentation"] a[href="/en/colors"]';
+  await t.goto(BASE + '/variants', { waitUntil: 'networkidle' });
+  const link = 'aside nav[aria-label="Documentation"] a[href="/colors"]';
   const measure = () =>
     t.evaluate((sel) => {
       const a = document.querySelector(sel);
@@ -398,7 +398,7 @@ for (const scheme of ['light', 'dark']) {
 for (const [system, pick] of [['light', 'Dark'], ['dark', 'Light']]) {
   const ctxT = await b.newContext({ viewport: { width: 1280, height: 800 }, colorScheme: system });
   const t = await ctxT.newPage();
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   const read = () =>
     t.evaluate(() => ({
       header: [...document.querySelectorAll('header img')].filter((i) => getComputedStyle(i).display !== 'none').map((i) => i.getAttribute('src')),
@@ -410,7 +410,8 @@ for (const [system, pick] of [['light', 'Dark'], ['dark', 'Light']]) {
     }));
   const want = {
     header: [pick === 'Dark' ? '/kbach-logo-64.png' : '/kbach-logo-light-64.png'],
-    footer: [pick === 'Dark' ? '/kbach-logo-64.png' : '/kbach-logo-light-64.png'],
+    // the brand's logo, then the small one in the "Built with" row (2026-11-27): both follow the pick
+    footer: pick === 'Dark' ? ['/kbach-logo-64.png', '/kbach-logo-32.png'] : ['/kbach-logo-light-64.png', '/kbach-logo-light-32.png'],
     icons: 1,
     icon: system === 'dark' ? '/kbach-icon-64.png' : '/kbach-icon-light-64.png',
     bar: pick === 'Dark' ? '#1a2125' : '#faf7f0',
@@ -430,7 +431,7 @@ for (const [system, pick] of [['light', 'Dark'], ['dark', 'Light']]) {
 // System (the default) follows the device's theme, live; a picked Light or Dark holds until System is picked again
 {
   const t = await b.newPage({ viewport: { width: 1280, height: 700 }, colorScheme: 'light' });
-  await t.goto(BASE + '/en/typography', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/typography', { waitUntil: 'networkidle' });
   const html = () => t.evaluate(() => document.documentElement.className);
   const first = await html();
   await t.emulateMedia({ colorScheme: 'dark' });
@@ -470,7 +471,9 @@ for (const [system, pick] of [['light', 'Dark'], ['dark', 'Light']]) {
         brand: h.querySelector('div > div').textContent.replace(/\s+/g, ' ').trim(),
         main: [...h.querySelectorAll('nav[aria-label="Main"] a')].map((a) => a.textContent),
         site: [...h.querySelectorAll('nav[aria-label="Site"] a')].map((a) => a.textContent + (a.getAttribute('aria-current') ? '*' : '')),
-        getStarted: !!h.querySelector('a[href="/en/introduction"].bg-accent'),
+        getStarted: !!h.querySelector('a[href="/introduction"].bg-accent'),
+        // the last control on the bar (GitHub, at the far right since 2026-11-27)
+        last: [...h.querySelectorAll('a, button')].filter((x) => x.offsetParent).pop()?.getAttribute('aria-label'),
         wideSearch: !!h.querySelector('button:has(kbd) span.truncate'),
         version: !!h.querySelector('a[href*="npmjs"]'),
         border: getComputedStyle(h).borderBottomColor,
@@ -478,34 +481,34 @@ for (const [system, pick] of [['light', 'Dark'], ['dark', 'Light']]) {
         rows: [...h.querySelectorAll('a, button')].filter((x) => x.offsetParent).some((x) => x.getBoundingClientRect().height > 44),
       };
     });
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   const home = await header();
-  check(home.brand === 'Kbach' && home.main.join(',') === 'Docs,Utilities,Customization,API,Playground' && home.getStarted && !home.version && home.site.length === 0, 'home: just the brand, the main links, and Get started ' + JSON.stringify(home));
+  check(home.brand === 'Kbach' && home.main.join(',') === 'Docs,Utilities,Customization,API,Playground' && !home.getStarted && home.last === 'Kbach on GitHub' && !home.version && home.site.length === 0, 'home: the brand, the main links, no Get started, GitHub at the far right ' + JSON.stringify(home));
   check(home.border === 'rgba(0, 0, 0, 0)', 'home: the bar is see-through over the hero (' + home.border + ')');
   await t.mouse.wheel(0, 600);
   await t.waitForTimeout(500);
   check((await header()).border !== 'rgba(0, 0, 0, 0)', 'home: it gets its border once the page scrolls');
-  await t.goto(BASE + '/en/typography', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/typography', { waitUntil: 'networkidle' });
   const docs = await header();
-  check(docs.brand.includes('Docs') && docs.site.join(',') === 'Docs*,Playground' && docs.wideSearch && docs.version && docs.main.length === 0 && !docs.getStarted, 'a docs page: "Kbach / Docs", the wide search, the version, Docs marked in the switch ' + JSON.stringify(docs));
+  check(docs.brand.includes('Docs') && docs.site.join(',') === 'Docs*,Playground' && docs.wideSearch && docs.version && docs.main.length === 0 && !docs.getStarted && docs.last === 'Kbach on GitHub', 'a docs page: "Kbach / Docs", the wide search, the version, Docs marked in the switch, GitHub at the far right ' + JSON.stringify(docs));
   // the playground is its own full-screen page: no navbar, no footer
-  await t.goto(BASE + '/en/playground', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/playground', { waitUntil: 'networkidle' });
   const pg = await t.evaluate(() => ({ header: !!document.querySelector('header'), footer: !!document.querySelector('footer') }));
   check(!pg.header && !pg.footer, 'the playground has no navbar and no footer ' + JSON.stringify(pg));
   for (const w of [1024, 1280]) {
     await t.setViewportSize({ width: w, height: 900 });
-    await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+    await t.goto(BASE + '/', { waitUntil: 'networkidle' });
     check(!(await header()).rows, w + 'px: nothing in the home navbar wraps onto two lines');
   }
   // the phone menu starts with where you are
   await t.setViewportSize({ width: 390, height: 800 });
-  await t.goto(BASE + '/en/typography', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/typography', { waitUntil: 'networkidle' });
   await t.click('button[aria-label="Open navigation"]');
   await t.waitForTimeout(400);
   const places = await t.$$eval('.fixed nav[aria-label="Site"] a', (as) => as.map((a) => a.textContent + (a.getAttribute('aria-current') ? '*' : '')));
   check(places.join(',') === 'Home,Docs*,Playground', 'the phone menu: Home, Docs (current), Playground, then the sections (' + places.join(',') + ')');
   // on the home page the menu is the home links, not the docs' pages
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   await t.click('button[aria-label="Open navigation"]');
   await t.waitForTimeout(400);
   const homeMenu = await t.evaluate(() => {
@@ -513,16 +516,18 @@ for (const [system, pick] of [['light', 'Dark'], ['dark', 'Light']]) {
     return {
       links: [...panel.querySelectorAll('nav[aria-label="Main"] a span.block.font-semibold, nav[aria-label="Main"] a span.text-\\[15px\\]')].map((s) => s.textContent),
       docsList: !!panel.querySelector('nav[aria-label="Documentation"]'),
-      getStarted: !!panel.querySelector('a[href="/en/introduction"].bg-accent'),
+      getStarted: /Get started/.test(panel.textContent),
+      github: !!panel.querySelector('a[href^="https://github.com/"]'),
     };
   });
-  check(homeMenu.links.join(',') === 'Docs,Utilities,Customization,API,Playground' && !homeMenu.docsList && homeMenu.getStarted, 'the home page phone menu: the home links and Get started, not the docs list ' + JSON.stringify(homeMenu));
+  // no Get started in the menu (2026-11-27, as in the header: the hero has it)
+  check(homeMenu.links.join(',') === 'Docs,Utilities,Customization,API,Playground' && !homeMenu.docsList && !homeMenu.getStarted && homeMenu.github, 'the home page phone menu: the home links and GitHub, no Get started, not the docs list ' + JSON.stringify(homeMenu));
   await t.click('.fixed.inset-0.z-40 a:has-text("Utilities")');
   await t.waitForTimeout(400);
-  check(new URL(t.url()).pathname === '/en/layout' && !(await t.isVisible('button[aria-label="Close navigation"]')), 'picking one goes there and closes the menu');
+  check(new URL(t.url()).pathname === '/layout' && !(await t.isVisible('button[aria-label="Close navigation"]')), 'picking one goes there and closes the menu');
   // a docs page's bar starts see-through too
   await t.setViewportSize({ width: 1440, height: 900 });
-  await t.goto(BASE + '/en/typography', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/typography', { waitUntil: 'networkidle' });
   const top = await t.evaluate(() => ({ bg: getComputedStyle(document.querySelector('header')).backgroundColor, border: getComputedStyle(document.querySelector('header')).borderBottomColor }));
   check(top.bg === 'rgba(0, 0, 0, 0)' && top.border === 'rgba(0, 0, 0, 0)', 'a docs page: the bar is see-through at the top ' + JSON.stringify(top));
   await t.close();
@@ -532,7 +537,7 @@ for (const [system, pick] of [['light', 'Dark'], ['dark', 'Light']]) {
 // setup lights its path back to the engine (two lines) and says how Kbach plugs in; every node is a link.
 for (const [w, beside] of [[1440, true], [1024, true], [390, false]]) {
   const t = await b.newPage({ viewport: { width: w, height: 900 } });
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   await t.waitForTimeout(900); // the hero's rise-in
   const m = await t.evaluate(() => {
     const box = document.querySelector('[data-network]').getBoundingClientRect();
@@ -568,17 +573,17 @@ for (const [w, beside] of [[1440, true], [1024, true], [390, false]]) {
     const keyed = await lit();
     check(keyed.lines === 2 && keyed.says.includes('script tag'), 'a node in focus lights its path too ' + JSON.stringify(keyed));
     const hrefs = await t.$$eval('[data-network] a', (as) => as.map((a) => a.getAttribute('href')));
-    check(hrefs.includes('/en/installation?tab=nextjs') && hrefs.includes('/en/how-it-works') && hrefs.includes('/en/plain-html'), 'its nodes link to where to start ' + JSON.stringify(hrefs));
+    check(hrefs.includes('/installation?tab=nextjs') && hrefs.includes('/how-it-works') && hrefs.includes('/plain-html'), 'its nodes link to where to start ' + JSON.stringify(hrefs));
   }
   await t.close();
 }
 
-// The map fits whatever its labels' widths: a 320px phone, the Khmer labels, a bigger text size in the
+// The map fits whatever its labels' widths: a 320px phone, a bigger text size in the
 // browser (the user saw labels run out of the map). It measures its labels and nudges any that would
 // cross an edge, or touch the engine, back in; the lines go to where the labels really are.
-for (const [lang, w, root] of [['en', 320, '16px'], ['km', 320, '16px'], ['en', 320, '20px'], ['en', 430, '20px'], ['en', 1440, '20px']]) {
+for (const [lang, w, root] of [['en', 320, '16px'], ['en', 320, '20px'], ['en', 430, '20px'], ['en', 1440, '20px']]) {
   const t = await b.newPage({ viewport: { width: w, height: 900 } });
-  await t.goto(BASE + '/' + lang, { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   await t.evaluate((size) => (document.documentElement.style.fontSize = size), root);
   await t.waitForTimeout(1200);
   const m = await t.evaluate(() => {
@@ -608,9 +613,9 @@ for (const [lang, w, root] of [['en', 320, '16px'], ['km', 320, '16px'], ['en', 
 // Expo and Plain HTML ran out past their borders). Chromium never showed it, so Firefox runs this.
 for (const engine of [chromium, firefox]) {
   const fb = await engine.launch();
-  for (const [lang, w] of [['en', 390], ['en', 487], ['km', 390], ['en', 1440]]) {
+  for (const [lang, w] of [['en', 390], ['en', 487], ['en', 1440]]) {
     const t = await fb.newPage({ viewport: { width: w, height: 900 } });
-    await t.goto(BASE + '/' + lang, { waitUntil: 'networkidle' });
+    await t.goto(BASE + '/', { waitUntil: 'networkidle' });
     await t.waitForTimeout(600);
     const squeezed = await t.evaluate(() =>
       [...document.querySelectorAll('[data-network] a')].flatMap((a) => {
@@ -630,7 +635,7 @@ for (const engine of [chromium, firefox]) {
 // the contents, compact: each part shows its first 5 pages; "Show N more" shows the rest, "Show fewer" hides them again
 {
   const t = await ctx.newPage();
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   const visible = () => t.$$eval('[data-part]', (ps) => ps.map((p) => [...p.querySelectorAll('ul a')].filter((a) => a.offsetParent).length));
   const before = await visible();
   // (a part folds only when that hides 2 pages or more: Core concepts' 6 all show)
@@ -651,12 +656,12 @@ for (const engine of [chromium, firefox]) {
 // the contents: a part's title opens its first page
 {
   const t = await ctx.newPage();
-  await t.goto(BASE + '/en', { waitUntil: 'networkidle' });
+  await t.goto(BASE + '/', { waitUntil: 'networkidle' });
   const part = t.locator('[data-part]').first().locator('div a');
   await part.scrollIntoViewIfNeeded();
   await part.click();
-  await t.waitForURL(BASE + '/en/introduction');
-  check(new URL(t.url()).pathname === '/en/introduction', 'the contents: "Getting started" opens its first page');
+  await t.waitForURL(BASE + '/introduction');
+  check(new URL(t.url()).pathname === '/introduction', 'the contents: "Getting started" opens its first page');
   await t.close();
 }
 

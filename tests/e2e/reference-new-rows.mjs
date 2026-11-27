@@ -13,7 +13,7 @@ const rows = {
   'transitions-animation': [['duration-initial', 'initial']],
 };
 for (const [page, want] of Object.entries(rows)) {
-  await p.goto('http://localhost:5176/en/' + page, { waitUntil: 'networkidle' });
+  await p.goto('http://localhost:5176/' + page, { waitUntil: 'networkidle' });
   await p.waitForTimeout(800);
   // tables longer than 8 rows fold behind "Show all N classes"
   for (const more of await p.$$('button:has-text("Show all")')) await more.click();

@@ -6,7 +6,7 @@ const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
   if (!ok) failures++;
 };
-const URL = 'http://localhost:5176/en/playground';
+const URL = 'http://localhost:5176/playground';
 const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: 1440, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
 const p = await ctx.newPage();
@@ -35,8 +35,10 @@ const where = await p.evaluate(() => {
   return {
     headerName: !!inHeader('.truncate.font-semibold'),
     headerExamplesMenu: inHeader('button[aria-haspopup="menu"]:not([aria-label="More"]):not([aria-label="Layout"])'),
-    headerRun: inHeader('button[aria-label="Run again"]'),
+    headerRun: inHeader('button[aria-label^="Run"]'),
     headerAuto: inHeader('[role="switch"]'),
+    outputAuto: inSec('Output', '[role="switch"]'),
+    outputReload: inSec('Output', 'button[aria-label="Reload"]'),
     headerLayout: inHeader('button[aria-label="Layout"]'),
     headerFull: inHeader('button[aria-label="Full screen"]'),
     headerMore: inHeader('button[aria-label="More"]'),
@@ -49,12 +51,12 @@ const where = await p.evaluate(() => {
     outputInspect: inSec('Output', 'button[aria-label="Inspect"]'),
   };
 });
-check(where.headerName && !where.headerExamplesMenu && where.headerRun && where.headerAuto && where.headerLayout && !where.headerFull && where.headerMore && where.headerShare, 'the header holds the project controls: the example’s name, Run, Auto-run, Layout, ⋯, Share (no examples menu or full-screen toggle) ' + JSON.stringify(where));
-check(!where.codeExamples && !where.outputRun && !where.outputShare && !where.outputMore && where.outputInspect, 'the editor bar has no examples menu; the preview bar has no Run / Share / ⋯, but has Inspect');
+check(where.headerName && !where.headerExamplesMenu && !where.headerRun && !where.headerAuto && where.headerLayout && !where.headerFull && where.headerMore && where.headerShare, 'the header holds the project controls: the example’s name, Layout, ⋯, Share (no Run, Auto-run, examples menu or full-screen toggle) ' + JSON.stringify(where));
+check(!where.codeExamples && !where.outputShare && !where.outputMore && where.outputInspect && where.outputAuto && where.outputReload && !where.outputRun, 'the editor bar has no examples menu; the preview bar has Inspect, Auto-run and Reload (Run only while Auto-run is off), no Share or ⋯');
 check(!where.outputFooter, 'the preview has no footer under it');
 
 // --- a fresh start every visit
-check((await exampleName()) === 'Playground' && (await firstLine()) === '<!doctype html>' && (await hasLine(p, '<title>Landing page</title>')), 'a first visit opens the Landing page, under the name Playground (' + (await exampleName()) + ')');
+check((await exampleName()) === 'Landing page' && (await firstLine()) === '<!doctype html>' && (await hasLine(p, '<title>Landing page: a hero, a class builder, numbers that count up</title>')), 'a first visit opens the Landing page, under its name, Landing page (' + (await exampleName()) + ')');
 await p.click('.cm-editor:visible .cm-content');
 // the end of the <body …> line (its attributes vary)
 await cursorAfter(p, '<body');
@@ -69,7 +71,7 @@ await p.keyboard.press('Escape');
 await p.reload({ waitUntil: 'networkidle' });
 await p.waitForSelector('.cm-content');
 await p.waitForTimeout(1200);
-check(!(await hasLine(p, '<!-- mine -->')) && (await exampleName()) === 'Playground' && (await p.$('[aria-label="(edited)"]')) === null, 'a reload starts again from the untouched Landing page (first line: ' + (await firstLine()) + ')');
+check(!(await hasLine(p, '<!-- mine -->')) && (await exampleName()) === 'Landing page' && (await p.$('[aria-label="(edited)"]')) === null, 'a reload starts again from the untouched Landing page (first line: ' + (await firstLine()) + ')');
 const st = await statusText();
 check(st.includes('Started fresh') && st.includes('Restore my last code'), 'the status bar says so, and offers the last code back: ' + st.trim());
 items = await openMore();
@@ -115,7 +117,7 @@ await p.waitForTimeout(700);
 check((await p.$('button[aria-label="Run (there are changes)"]')) !== null, 'with Auto off, Run shows there are changes waiting');
 await p.click('button[aria-label="Run (there are changes)"]');
 await p.waitForTimeout(700);
-check((await p.$('button[aria-label="Run again"]')) !== null, 'Run runs them');
+check((await p.$('button[aria-label="Run"]')) !== null && (await p.$('section[aria-label="Output"] button[aria-label="Run"]')) !== null, 'Run (in the preview bar) runs them');
 await p.click('[role="switch"]:has-text("Auto")');
 
 // --- Fix all sits in the editor's status bar
@@ -142,13 +144,14 @@ await p.waitForTimeout(300);
 check(/CSS · \d+ rules · read-only/.test(await statusText()), 'kbach.css: the status bar counts its rules');
 await p.click('[role="tab"]:has-text("index.html")');
 
-// --- fits, at every width (full screen: stacked below 768px, side by side from there)
-for (const w of [320, 390, 768, 1024, 1280, 1440]) {
-  const layout = w < 768 ? 'stacked' : 'side by side';
+// --- fits, at every width (full screen: a phone's one pane at a time below 640px, stacked below
+// 768px, side by side from there)
+for (const w of [320, 390, 700, 768, 1024, 1280, 1440]) {
+  const layout = w < 640 ? 'phone' : w < 768 ? 'stacked' : 'side by side';
   await p.setViewportSize({ width: w, height: 900 });
   await p.reload({ waitUntil: 'networkidle' });
   await p.waitForTimeout(900);
-  const m = await p.evaluate(() => {
+  const measure = () => p.evaluate(() => {
     const header = document.querySelector('section[aria-label="Code"]').parentElement.previousElementSibling;
     const hb = header.getBoundingClientRect();
     const rows = (el) => {
@@ -178,6 +181,14 @@ for (const w of [320, 390, 768, 1024, 1280, 1440]) {
       name: header.querySelector('.truncate.font-semibold').getBoundingClientRect().width,
     };
   });
+  let m = await measure();
+  // a phone opens on the preview; the editor's bar is measured once Code is picked
+  if (w < 640) {
+    await p.click('nav[aria-label="Playground view"] button:has-text("Code")');
+    await p.waitForTimeout(300);
+    const code = await measure();
+    m = { ...m, editorBarRows: code.editorBarRows, over: [...m.over, ...code.over], pageScroll: Math.max(m.pageScroll, code.pageScroll) };
+  }
   check(
     m.pageScroll <= 0 && m.over.length === 0 && m.headerRows === 1 && m.editorBarRows === 1 && m.name >= 60,
     w + 'px ' + layout + ': no overflow, header and editor bar on one row each, preview bar ' + m.barRows + ' row(s) ' + JSON.stringify(m),

@@ -9,7 +9,9 @@ import {
 // build plugin reads. It's read here as DATA, never run: a shared link carries
 // someone else's file, and the docs page must not execute it. So it has to be
 // a plain object after `module.exports =` (or `export default`); comments,
-// unquoted keys, single quotes and trailing commas are fine (JSON5).
+// unquoted keys, single quotes and trailing commas are fine (JSON5). An HTML
+// page's `window.kbachConfig = { … }` (cdn.ts) is read the same way, for the
+// playground's own checks; the preview runs that one for real.
 
 export const DEFAULT_CONFIG = `/** @type {import('@kbach/react').KbachConfig} */
 module.exports = {
@@ -35,7 +37,7 @@ export type ConfigResult =
   | { config: KbachConfig; error?: undefined }
   | { config?: undefined; error: { message: string; line: number } };
 
-const START = /(?:module\.exports\s*=|export\s+default)\s*/;
+const START = /(?:module\.exports\s*=|export\s+default|window\.kbachConfig\s*=)\s*/;
 const DARK_MODES = ["class", "attribute", "media"];
 
 /** kbach.config.js read as data: the object it exports, or what's wrong (with its line). */

@@ -1,5 +1,6 @@
 // Every playground example, end to end in Chromium, plus Kbach help inside the script editor.
 import { readFileSync } from 'fs';
+import { strFromU8, unzipSync } from 'fflate';
 import { chromium } from 'playwright';
 import { openExample } from './example-link.js';
 let failures = 0;
@@ -12,7 +13,7 @@ const ctx = await b.newContext({ viewport: { width: 1440, height: 1000 }, permis
 const p = await ctx.newPage();
 const pageErrors = [];
 p.on('pageerror', (e) => !/about:srcdoc/.test(e.stack || '') && pageErrors.push(e.message));
-await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
 await p.evaluate(() => localStorage.clear());
 await p.reload({ waitUntil: 'networkidle' });
 await p.waitForSelector('.cm-content');
@@ -87,12 +88,27 @@ await p.waitForTimeout(800);
 // the works-with strip: each one's official logo, loaded (its own items and the script's copies)
 const marks = await inCanvas(() => [...document.querySelectorAll('#marquee img')].map((i) => ({ src: i.getAttribute('src'), loaded: i.naturalWidth > 0 })));
 check(marks.length === 14 && marks.every((m) => m.loaded), 'landing: the works-with strip shows each official logo ' + JSON.stringify(marks.slice(0, 7).map((m) => m.src)));
-// a downloaded copy can't load "/kbach-logo-64.png" from a disk: its URLs are made full
+// Download: a .zip, each file on its own (2026-11-27); a downloaded copy can't load
+// "/kbach-logo-64.png" from a disk, so its URLs are made full
 await p.click('button[aria-label="More"]');
 const download = p.waitForEvent('download');
 await p.click('[role="menuitem"]:has-text("Download")');
-const saved = readFileSync(await (await download).path(), 'utf8');
-check(saved.includes('src="http://localhost:5176/kbach-logo-64.png"') && saved.includes('href="#top"'), 'landing: the downloaded file has the logo’s full URL (and #top left as it is)');
+const zipFile = await download;
+const zipped = Object.fromEntries(Object.entries(unzipSync(readFileSync(await zipFile.path()))).map(([k, v]) => [k, strFromU8(v)]));
+const saved = zipped['landing/index.html'] ?? '';
+check(zipFile.suggestedFilename() === 'landing.zip' && ['index.html', 'kbach.config.js', 'kbach.css', 'script.js', 'style.css', 'README.md'].every((f) => ('landing/' + f) in zipped), 'landing: Download gives landing.zip, its files apart: ' + Object.keys(zipped).join(', '));
+check(saved.includes('src="http://localhost:5176/kbach-logo-64.png"') && saved.includes('href="#top"'), 'landing: the downloaded page has the logo’s full URL (and #top left as it is)');
+check(saved.includes('<link rel="stylesheet" href="kbach.css" />') && saved.includes('<link rel="stylesheet" href="style.css" />') && saved.includes('<script src="kbach.config.js"></script>') && saved.includes('<script type="module" src="script.js"></script>') && zipped['landing/kbach.config.js'].includes('window.kbachConfig = {'), 'landing: index.html loads kbach.css, style.css, kbach.config.js (window.kbachConfig) and script.js, each a file of its own');
+// kbach.css is the generated CSS, the same as the kbach.css tab (2026-11-27: the zip had none for an HTML page)
+await p.click('[role="tablist"][aria-label="Files"] [role="tab"]:has-text("kbach.css")');
+await p.waitForTimeout(300);
+await p.click('section[aria-label="Code"] button[aria-label="Copy code"]');
+await p.waitForTimeout(200);
+const tabCss = (await p.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n');
+const zipCss = zipped['landing/kbach.css'];
+check(zipCss.startsWith('/* kbach:start */') && zipCss.includes('.bg-brand') && zipCss.trimEnd() === tabCss.trimEnd(), 'landing: the zip’s kbach.css is the generated CSS, exactly the kbach.css tab (' + zipCss.length + ' bytes, .bg-brand in it)');
+check(!zipped['landing/style.css'].includes('.bg-brand') && zipped['landing/style.css'].includes('padding: 1.5rem'), 'landing: style.css is only the preview’s page basics');
+await p.click('[role="tablist"][aria-label="Files"] [role="tab"]:has-text("index.html")');
 
 // Kbach help in the script editor: completion and checks inside classList.add('…')
 await p.click('button[role="tab"]:has-text("script")');

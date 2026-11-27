@@ -1,5 +1,6 @@
 // native-styles.js: the React Native style objects Kbach makes from the same classes, as a read-only editor tab.
 import { chromium } from 'playwright';
+import { cdnPage } from './example-link.js';
 let failures = 0;
 const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
@@ -10,16 +11,17 @@ const ctx = await b.newContext({ viewport: { width: 1920, height: 1000 }, colorS
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => !/about:srcdoc/.test(e.stack || '') && errors.push(e.message));
-await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
 await p.evaluate(() => localStorage.clear());
 await p.reload({ waitUntil: 'networkidle' });
 await p.waitForTimeout(1200);
 
 const tab = (name) => p.locator('[role="tablist"][aria-label="Files"] [role="tab"]', { hasText: name });
 const shown = '.cm-editor:visible';
+// a whole page, as HTML mode has one (kbach.config.js, the landing page's: its surface is white, then the CDN script)
 const setHtml = async (html) => {
   await tab('index.html').click();
-  await p.fill(shown + ' .cm-content', html);
+  await p.fill(shown + ' .cm-content', cdnPage(html));
   await p.waitForTimeout(900);
 };
 // the whole file, through Copy (the editor only draws the lines in view)
@@ -33,16 +35,15 @@ const status = () => p.$eval('section[aria-label="Code"]', (s) => s.textContent)
 const files = await p.$$eval('[role="tablist"][aria-label="Files"] [role="tab"] .sr-only', (ts) => ts.map((t) => t.textContent.trim()));
 check(files.join(',').endsWith('kbach.css,native-styles.js'), 'the editor has a native-styles.js tab after kbach.css (' + files.join(', ') + ')');
 
-await setHtml(
-  [
-    '<div class="rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-10 md:p-10">',
-    '  <h2 class="text-lg font-semibold text-gray-12 dark:text-white">Kbach</h2>',
-    '  <a class="text-sky-7 transition hover:underline">one</a>',
-    '  <a class="text-sky-7 transition hover:underline">two</a>',
-    '  <div class="grid grid-cols-3 gap-4 bg-surface">x</div>',
-    '</div>',
-  ].join('\n'),
-);
+const MARKUP = [
+  '<div class="rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-10 md:p-10">',
+  '  <h2 class="text-lg font-semibold text-gray-12 dark:text-white">Kbach</h2>',
+  '  <a class="text-sky-7 transition hover:underline">one</a>',
+  '  <a class="text-sky-7 transition hover:underline">two</a>',
+  '  <div class="grid grid-cols-3 gap-4 bg-surface">x</div>',
+  '</div>',
+].join('\n');
+await setHtml(MARKUP);
 await tab('native-styles.js').click();
 await p.waitForTimeout(300);
 let js = await file();
@@ -98,7 +99,7 @@ check((await file()) === before, 'it is read-only');
 // with no colors of its own in kbach.config.js, bg-surface does nothing on a phone:
 // the web defaults add a surface color, @kbach/react-native's don't
 await tab('kbach.config.js').click();
-await p.fill(shown + ' .cm-content', 'module.exports = {};');
+await p.fill(shown + ' .cm-content', 'window.kbachConfig = {};');
 await p.waitForTimeout(900);
 await tab('native-styles.js').click();
 await p.waitForTimeout(300);

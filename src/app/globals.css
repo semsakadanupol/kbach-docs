@@ -4,6 +4,8 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
+  /* no browser tap flash: every link and button has its own press (active:) look */
+  -webkit-tap-highlight-color: transparent;
 }
 ::selection {
   background: rgb(199 162 93 / 0.3);

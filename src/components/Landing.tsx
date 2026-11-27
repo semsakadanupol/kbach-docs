@@ -3,7 +3,6 @@
 import { useState, type ReactNode } from "react";
 import { clsx, defaultTheme } from "@kbach/react";
 import { KBACH_VERSION, NAV } from "../lib/docs";
-import { useT } from "../lib/i18n";
 import { SiteLink } from "./SiteLink";
 import { usePageInfo } from "./site/SiteData";
 import { CodeLines, CopyButton } from "./CodeBlock";
@@ -12,7 +11,7 @@ import { Reveal } from "./Motion";
 import { WorksWith } from "./WorksWith";
 import { ArrowRightIcon, ChevronRightIcon } from "./icons";
 
-// The home page (/en, /km). It shows what Kbach does instead of describing
+// The home page (/). It shows what Kbach does instead of describing
 // it: one class and the three things the engine makes from it, a class read
 // word by word, the whole palette, a mistake being caught, the three ways in,
 // and the docs' contents. Each section has its own form (2026-11-19: the user
@@ -120,6 +119,22 @@ const PLATFORMS: { brand: Brand; name: string; text: string; command: string; pr
   },
 ];
 
+/** The class names and commands the home page's sentences mention. */
+const CODE_IN_TEXT = /(bg-blue-\d+|npm run dev|npx @kbach\/cli ai)/;
+
+/** A sentence with its class names and commands in code type, each kept on one line (a phone broke bg- / blue-1). */
+function withCode(text: string): ReactNode[] {
+  return text.split(CODE_IN_TEXT).map((part, i) =>
+    i % 2 ? (
+      <code key={i} className="font-mono text-[0.9em] whitespace-nowrap text-ink">
+        {part}
+      </code>
+    ) : (
+      part
+    ),
+  );
+}
+
 /** Where mistakes are caught (the terminal is shown beside the list). */
 const CATCHERS = [
   "The terminal, while npm run dev runs (Vite, Next.js, PostCSS).",
@@ -137,11 +152,12 @@ export const INIT_COMMAND = "npx @kbach/cli init";
  * above, 96px above and below, the same heading and intro, then 48px to the
  * content. Optional: something at the heading's right (a link).
  */
-function Section({ title, intro, aside, children }: { title?: ReactNode; intro?: ReactNode; aside?: ReactNode; children: ReactNode }) {
+/** A home page section: its title rises in as it scrolls into view, then its content (unless the content reveals its own parts: `staggered`). */
+function Section({ title, intro, aside, staggered, children }: { title?: ReactNode; intro?: ReactNode; aside?: ReactNode; staggered?: boolean; children: ReactNode }) {
   return (
     <section className="border-t border-line py-24">
       {title && (
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div data-reveal="" className="mb-12 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
             <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-ink sm:text-4xl">{title}</h2>
             {intro && <p className="mt-4 text-base leading-7 text-pretty text-muted">{intro}</p>}
@@ -149,13 +165,12 @@ function Section({ title, intro, aside, children }: { title?: ReactNode; intro?:
           {aside}
         </div>
       )}
-      {children}
+      {staggered ? children : <div data-reveal="">{children}</div>}
     </section>
   );
 }
 
 function Hero() {
-  const t = useT();
   const rise = `animate-[kbd-fade-up_800ms_cubic-bezier(0.22,1,0.36,1)_both]`;
   return (
     <section className="pt-14 pb-24 sm:pt-20">
@@ -164,26 +179,26 @@ function Hero() {
         <div className="min-w-0">
           <p className={clsx("inline-flex items-center gap-2 font-mono text-xs text-muted", rise)}>
             <span className="size-1.5 rounded-full bg-gold" aria-hidden="true" />
-            {t("Open source")} · v{KBACH_VERSION}
+            Open source · v{KBACH_VERSION}
           </p>
           <h1 className={clsx("mt-5 font-display text-[2.6rem] leading-[1.03] font-semibold tracking-tight text-balance text-ink sm:text-6xl xl:text-7xl [animation-delay:80ms]", rise)}>
-            {t("Write a class once.")}{" "}
+            Write a class once.{" "}
             <span className="bg-linear-to-r from-bronze via-gold to-ember bg-clip-text text-transparent dark:from-gold dark:via-ember dark:to-[#f3e2b8]">
-              {t("Style web, iOS, Android and HTML.")}
+              Style web, iOS, Android and HTML.
             </span>
           </h1>
           <p className={clsx("mt-6 max-w-2xl text-lg leading-8 text-pretty text-muted [animation-delay:160ms]", rise)}>
-            {t("Kbach styles React, React Native and plain HTML pages with short class names. One Rust engine reads them, so a class means the same thing everywhere.")}
+            Kbach styles React, React Native and plain HTML pages with short class names. One Rust engine reads them, so a class means the same thing everywhere.
           </p>
           <div className={clsx("mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 [animation-delay:240ms]", rise)}>
             <SiteLink
               href="/introduction"
-              className="group inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-ink shadow-lg shadow-gold/25 transition hover:opacity-90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              className="group inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-ink shadow-lg shadow-gold/25 transition hover:opacity-90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold active:opacity-90"
             >
-              {t("Get started")} <ArrowRightIcon className="transition-transform group-hover:translate-x-0.5" />
+              Get started <ArrowRightIcon className="transition-transform group-hover:translate-x-0.5 group-active:translate-x-0.5" />
             </SiteLink>
-            <SiteLink href="/playground" className="text-sm font-semibold text-ink underline decoration-gold/50 decoration-2 underline-offset-[6px] transition-colors hover:decoration-gold">
-              {t("Open the playground")}
+            <SiteLink href="/playground" className="text-sm font-semibold text-ink underline decoration-gold/50 decoration-2 underline-offset-[6px] transition-colors hover:decoration-gold active:decoration-gold">
+              Open the playground
             </SiteLink>
           </div>
           <div className={clsx("mt-8 [animation-delay:320ms]", rise)}>
@@ -194,7 +209,7 @@ function Hero() {
               <code data-init="" className="truncate text-ink">{INIT_COMMAND}</code>
               <CopyButton text={INIT_COMMAND} tone="page" className="shrink-0" />
             </div>
-            <p className="mt-2 text-[13px] text-faint">{t("Sets up Vite, Next.js, Expo or React Native: installs the package, adds the plugin, imports the CSS.")}</p>
+            <p className="mt-2 text-[13px] text-faint">Sets up Vite, Next.js, Expo or React Native: installs the package, adds the plugin, imports the CSS.</p>
           </div>
         </div>
         <div className={clsx("min-w-0 [animation-delay:200ms]", rise)}>
@@ -210,13 +225,20 @@ function Hero() {
 
 /** One class, and lines down to what the engine makes of it in each place Kbach runs. */
 function EngineDiagram() {
-  const t = useT();
   return (
-    <figure className="mx-0 mt-20 mb-0" aria-label={t("One class, three outputs")}>
+    <figure className="mx-0 mt-20 mb-0" aria-label="One class, three outputs">
       <div className="flex justify-center">
-        <code data-hero-class="" className="max-w-full rounded-full border border-gold/50 bg-card px-5 py-3 text-center font-mono text-[13px] text-ink shadow-md shadow-gold/10 sm:text-base">
+        <code data-hero-class="" className="max-w-full rounded-full border border-gold/50 bg-card px-4 py-3 text-center font-mono text-xs text-ink shadow-md shadow-gold/10 sm:px-5 sm:text-base">
           <span className="text-faint">class=&quot;</span>
-          <span className="text-accent">{HERO_CLASS}</span>
+          {/* each class whole: on a phone the line may wrap between classes, never inside one (md:p- / 10) */}
+          <span className="text-accent">
+            {HERO_CLASS.split(" ").map((c, i) => (
+              <span key={c} className="whitespace-nowrap">
+                {i > 0 && " "}
+                {c}
+              </span>
+            ))}
+          </span>
           <span className="text-faint">&quot;</span>
         </code>
       </div>
@@ -245,13 +267,13 @@ function EngineDiagram() {
               <div className="h-8 w-px bg-gold/50" />
               <ArrowHead />
             </div>
-            <p className="text-center text-xs font-semibold tracking-[0.12em] text-accent uppercase">{t(o.label)}</p>
-            <p className="mt-1 text-center font-display text-lg font-semibold text-ink">{t(o.where)}</p>
+            <p className="text-center text-xs font-semibold tracking-[0.12em] text-accent uppercase">{o.label}</p>
+            <p className="mt-1 text-center font-display text-lg font-semibold text-ink">{o.where}</p>
             <div className="mt-4 overflow-hidden rounded-xl border border-line bg-snippet [&_pre]:py-3 [&_pre]:text-[12px] [&_pre]:leading-5">
               {/* the HTML sample's script line is long: it wraps (the CSS and the style object fit) */}
               <CodeLines code={o.code} lang={o.lang} wrap={o.id === "html"} />
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted">{t(o.note)}</p>
+            <p className="mt-3 text-sm leading-6 text-muted">{o.note}</p>
           </div>
         ))}
       </div>
@@ -270,20 +292,19 @@ function ArrowHead() {
 
 /** A class read word by word. */
 function Anatomy() {
-  const t = useT();
   return (
-    <Section title={t("Read a class like a sentence")} intro={t("Each word sets one thing. The part before a colon says when it applies; the number says how much.")}>
+    <Section staggered title="Read a class like a sentence" intro="Each word sets one thing. The part before a colon says when it applies; the number says how much.">
       <ol className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 lg:grid-cols-6">
-        {WORDS.map((w, n) => (
+        {WORDS.map((w) => (
           <li key={w.utility} data-word="">
-            <Reveal delay={n * 70}>
+            <Reveal>
               {/* one class never breaks across lines: smaller on a narrow phone instead, so the longest fits its column */}
               <code className="font-mono text-[13px] whitespace-nowrap text-ink min-[360px]:text-[15px] sm:text-lg lg:text-xl">
                 {w.variant && <span className="text-accent">{w.variant}</span>}
                 {w.utility}
               </code>
               <span className="mt-3 block h-0.5 w-full rounded-full bg-linear-to-r from-gold to-gold/10" aria-hidden="true" />
-              <span className="mt-3 block text-sm leading-6 text-muted">{t(w.means)}</span>
+              <span className="mt-3 block text-sm leading-6 text-muted">{w.means}</span>
             </Reveal>
           </li>
         ))}
@@ -294,15 +315,14 @@ function Anatomy() {
 
 /** Every color family and shade, as one strip. */
 function PaletteStrip() {
-  const t = useT();
   const colors = defaultTheme.colors as Record<string, string>;
   return (
     <Section
-      title={t("26 colors, 12 shades each")}
-      intro={t("Shade 1 is the lightest and 12 the darkest: bg-blue-1 to bg-blue-12. The same names work on every platform.")}
+      title="26 colors, 12 shades each"
+      intro={withCode("Shade 1 is the lightest and 12 the darkest: bg-blue-1 to bg-blue-12. The same names work on every platform.")}
       aside={
         <SiteLink href="/colors" className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
-          {t("See every color")} <ArrowRightIcon />
+          See every color <ArrowRightIcon />
         </SiteLink>
       }
     >
@@ -325,39 +345,39 @@ function PaletteStrip() {
 
 /** Where a mistake gets its name, beside the terminal saying it. */
 function Mistakes() {
-  const t = useT();
   return (
     <section className="grid items-center gap-12 border-t border-line py-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-      <div>
-        <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-ink sm:text-4xl">{t("A wrong class gets a name, not a blank space")}</h2>
+      <div data-reveal="">
+        <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-ink sm:text-4xl">A wrong class gets a name, not a blank space</h2>
         <p className="mt-4 text-base leading-7 text-pretty text-muted">
-          {t("An unknown class would leave an element unstyled, without a word. Kbach says which class, and the one you meant, wherever you work:")}
+          An unknown class would leave an element unstyled, without a word. Kbach says which class, and the one you meant, wherever you work:
         </p>
         <ul className="mt-6 space-y-3">
           {CATCHERS.map((c) => (
             <li key={c} className="flex gap-3 text-sm leading-6 text-ink/85">
               <span className="mt-2.5 size-1.5 shrink-0 rotate-45 bg-gold" aria-hidden="true" />
-              {t(c)}
+              <span>{withCode(c)}</span>
             </li>
           ))}
         </ul>
         <SiteLink href="/common-mistakes" className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
-          {t("Common mistakes")} <ArrowRightIcon />
+          Common mistakes <ArrowRightIcon />
         </SiteLink>
       </div>
-      <Terminal />
+      <Reveal>
+        <Terminal />
+      </Reveal>
     </section>
   );
 }
 
 /** The build plugin's real warning (vite-plugin/unknownClassWarnings.ts), as a terminal shows it. */
 function Terminal() {
-  const t = useT();
   return (
     <div className="overflow-hidden rounded-2xl bg-code font-mono text-[12.5px] leading-6 text-code-ink shadow-2xl shadow-black/20 ring-1 ring-white/5">
       <div className="flex items-center gap-2 border-b border-white/5 px-4 py-2.5 font-sans text-xs text-[#8e9ea5]">
         <span className="size-2.5 rounded-full bg-white/15" aria-hidden="true" />
-        {t("Terminal")}
+        Terminal
       </div>
       <div data-terminal="" className="space-y-1 overflow-x-auto px-5 py-5">
         <p>
@@ -380,18 +400,17 @@ function Terminal() {
 
 /** The three ways in, side by side, split by lines. */
 function Platforms() {
-  const t = useT();
   return (
-    <Section title={t("Three ways in")}>
+    <Section title="Three ways in">
       {/* four rows shared by the three columns (subgrid): the names, texts, commands and links line up */}
       <div className="grid divide-y divide-line lg:grid-cols-3 lg:divide-x lg:divide-y-0">
         {PLATFORMS.map((p) => (
           <div key={p.name} data-platform="" className="min-w-0 py-8 first:pt-0 last:pb-0 lg:row-span-4 lg:grid lg:grid-rows-subgrid lg:px-8 lg:py-0 lg:first:pl-0 lg:last:pr-0">
             <p className="flex items-center gap-2.5 text-lg font-semibold text-ink">
               <BrandIcon brand={p.brand} className="text-xl" />
-              {t(p.name)}
+              {p.name}
             </p>
-            <p className="mt-3 text-sm leading-6 text-muted">{t(p.text)}</p>
+            <p className="mt-3 text-sm leading-6 text-muted">{p.text}</p>
             <div className="mt-5 flex min-w-0 items-center gap-2 font-mono text-[12.5px]">
               <span className="text-accent select-none" aria-hidden="true">
                 {p.prompt}
@@ -400,7 +419,7 @@ function Platforms() {
               <CopyButton text={p.command} tone="page" className="shrink-0" />
             </div>
             <SiteLink href={p.href} className="mt-5 inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-accent">
-              {t(p.link)} <ArrowRightIcon />
+              {p.link} <ArrowRightIcon />
             </SiteLink>
           </div>
         ))}
@@ -411,9 +430,8 @@ function Platforms() {
 
 /** The docs as a book's table of contents: every part, numbered, with its pages. */
 function Contents() {
-  const t = useT();
   return (
-    <Section title={t("Everything in the docs")} intro={t("Seven parts, from the first install to the API.")}>
+    <Section title="Everything in the docs" intro="Seven parts, from the first install to the API.">
       <ol className="grid items-start gap-x-12 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {NAV.map((section, n) => (
           <Part key={section.title} number={n + 1} title={section.title} pages={section.pages} />
@@ -432,7 +450,6 @@ const SHOWN = 5;
  * every page is still a link in the built HTML.
  */
 function Part({ number, title, pages }: { number: number; title: string; pages: string[] }) {
-  const t = useT();
   const [open, setOpen] = useState(false);
   // a part folds only when that hides two pages or more: a button for one line saves nothing
   const more = pages.length - SHOWN >= 2 ? pages.length - SHOWN : 0;
@@ -441,14 +458,15 @@ function Part({ number, title, pages }: { number: number; title: string; pages: 
     <li data-part="">
       <div className="flex items-baseline gap-3 border-b border-line pb-3">
         <span className="font-mono text-sm text-accent">{String(number).padStart(2, "0")}</span>
-        <SiteLink href={"/" + pages[0]} className="font-display text-xl font-semibold text-ink transition-colors hover:text-accent">
-          {t(title)}
+        <SiteLink href={"/" + pages[0]} className="font-display text-xl font-semibold text-ink transition-colors hover:text-accent active:text-accent">
+          {title}
         </SiteLink>
       </div>
-      <ul id={id} className="mt-3 grid gap-1 pl-9">
+      <ul id={id} className="mt-2 grid pl-9 sm:mt-3 sm:gap-1">
         {pages.map((slug, i) => (
           <li key={slug} hidden={more > 0 && !open && i >= SHOWN}>
-            <SiteLink href={"/" + slug} className="text-sm text-muted transition-colors hover:text-accent">
+            {/* a finger-sized row on a phone (32px), the compact list from sm up */}
+            <SiteLink href={"/" + slug} className="inline-block py-1.5 text-sm text-muted transition-colors hover:text-accent active:text-accent sm:py-0">
               <PageName slug={slug} />
             </SiteLink>
           </li>
@@ -460,9 +478,9 @@ function Part({ number, title, pages }: { number: number; title: string; pages: 
           aria-expanded={open}
           aria-controls={id}
           onClick={() => setOpen((o) => !o)}
-          className="mt-2 ml-9 inline-flex items-center gap-1 rounded text-[13px] font-medium text-accent transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          className="mt-2 ml-9 inline-flex items-center gap-1 rounded text-[13px] font-medium text-accent transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold active:text-ink"
         >
-          {open ? t("Show fewer") : t("Show {n} more").replace("{n}", String(more))}
+          {open ? "Show fewer" : "Show {n} more".replace("{n}", String(more))}
           <ChevronRightIcon className={clsx("text-xs transition-transform", open ? "-rotate-90" : "rotate-90")} />
         </button>
       )}
@@ -471,17 +489,16 @@ function Part({ number, title, pages }: { number: number; title: string; pages: 
 }
 
 function Closing() {
-  const t = useT();
   return (
     <Section>
       <SiteLink href="/introduction" className="group inline-block font-display text-4xl font-semibold tracking-tight text-balance text-ink sm:text-6xl">
-        {t("Start with the introduction")}{" "}
-        <ArrowRightIcon className="inline text-accent transition-transform group-hover:translate-x-2" />
+        Start with the introduction{" "}
+        <ArrowRightIcon className="inline text-accent transition-transform group-hover:translate-x-2 group-active:translate-x-2" />
       </SiteLink>
       <p className="mt-6 text-base text-muted">
-        {t("Or try it first:")}{" "}
-        <SiteLink href="/playground" className="font-semibold text-ink underline decoration-gold/50 decoration-2 underline-offset-4 hover:decoration-gold">
-          {t("the playground runs the real engine in your browser")}
+        Or try it first:{" "}
+        <SiteLink href="/playground" className="font-semibold text-ink underline decoration-gold/50 decoration-2 underline-offset-4 hover:decoration-gold active:decoration-gold">
+          the playground runs the real engine in your browser
         </SiteLink>
         .
       </p>
@@ -489,7 +506,7 @@ function Closing() {
   );
 }
 
-/** A docs page's short name (the sidebar's), in the page's language. */
+/** A docs page's short name (the sidebar's). */
 function PageName({ slug }: { slug: string }) {
   return <>{usePageInfo(slug)?.nav ?? slug}</>;
 }

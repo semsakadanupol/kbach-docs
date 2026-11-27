@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo list: add, check off, filter</title>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <main
+      class="-m-6 grid min-h-screen place-items-start bg-linear-to-b from-brand/10 to-transparent px-4 py-10 sm:place-items-center sm:py-16"
+    >
+      <section
+        class="mx-auto w-full max-w-lg overflow-hidden rounded-3xl border border-line bg-card shadow-2xl shadow-ink/5"
+      >
+        <header class="p-6 pb-5">
+          <p id="today" class="text-sm font-medium text-muted"></p>
+          <div class="mt-1 flex items-end justify-between gap-4">
+            <h1 class="text-2xl font-bold tracking-tight">My tasks</h1>
+            <p id="progress-label" class="shrink-0 text-sm text-muted tabular-nums"></p>
+          </div>
+          <!-- how much is done: the bar's width follows -->
+          <div class="mt-4 h-2 overflow-hidden rounded-full bg-well">
+            <div
+              id="progress"
+              class="h-full rounded-full bg-brand transition-[width] duration-500 ease-out"
+            ></div>
+          </div>
+
+          <form id="add" class="mt-5 flex gap-2">
+            <label class="relative min-w-0 flex-1">
+              <span class="sr-only">A new task</span>
+              <svg
+                viewBox="0 0 24 24"
+                class="pointer-events-none absolute top-3 left-3.5 size-5 fill-none stroke-muted stroke-2"
+                stroke-linecap="round"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <input
+                id="new-task"
+                autocomplete="off"
+                placeholder="Add a task, press Enter"
+                class="h-11 w-full rounded-xl border border-line bg-surface pr-3 pl-10 text-sm outline-none transition placeholder:text-muted/70 focus:border-brand focus:bg-card focus:ring-4 focus:ring-brand/15"
+              />
+            </label>
+            <button
+              class="h-11 shrink-0 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-md shadow-brand/25 transition hover:bg-brand/90 active:scale-95"
+            >
+              Add
+            </button>
+          </form>
+        </header>
+
+        <!-- All / To do / Done, each with its count -->
+        <nav
+          id="filters"
+          aria-label="Show"
+          class="flex gap-1 border-y border-line bg-well/40 px-4 py-2 text-sm font-medium"
+        ></nav>
+
+        <ul id="list" class="divide-y divide-line"></ul>
+
+        <footer class="flex items-center justify-between px-6 py-4 text-sm text-muted">
+          <span id="left" class="tabular-nums"></span>
+          <button
+            id="clear"
+            class="font-medium transition-colors hover:text-rose-6 disabled:opacity-40 disabled:hover:text-muted"
+          >
+            Clear done
+          </button>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

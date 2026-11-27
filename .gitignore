@@ -45,3 +45,6 @@ shots/
 
 # turbo's cache
 .turbo
+
+# the playground TypeScript service's type files (scripts/ts-files.mjs makes them on every build)
+/public/ts/

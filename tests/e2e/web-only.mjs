@@ -38,7 +38,7 @@ const waitForEngine = async () => {
 };
 
 // --- a page with both kinds
-await p.goto(BASE + '/en/flexbox-grid', { waitUntil: 'networkidle' });
+await p.goto(BASE + '/flexbox-grid', { waitUntil: 'networkidle' });
 await waitForEngine();
 let all = (await tables()).flatMap((t) => t.rows);
 const row = (cls) => all.find((r) => r.cls === cls);
@@ -54,23 +54,17 @@ const grid = ts.find((t) => t.rows.some((r) => r.cls === 'grid-cols-3'));
 check(grid?.note && grid.rows.every((r) => !r.marked), 'the grid-cols table says "Web only" once, above it, not on each row');
 
 // --- a whole page of web-only classes
-await p.goto(BASE + '/en/filters', { waitUntil: 'networkidle' });
+await p.goto(BASE + '/filters', { waitUntil: 'networkidle' });
 await waitForEngine();
 ts = await tables();
 check(ts.length > 3 && ts.every((t) => t.note), 'every table on Filters carries the web-only note (' + ts.length + ' tables)');
 
 // --- values React Native can't read count as web only
-await p.goto(BASE + '/en/spacing', { waitUntil: 'networkidle' });
+await p.goto(BASE + '/spacing', { waitUntil: 'networkidle' });
 await waitForEngine();
 all = (await tables()).flatMap((t) => t.rows);
 check(row('p-4') && !row('p-4').marked, 'p-4: no mark');
 check(row('ps-4')?.marked, 'ps-4 (a "16px" string React Native ignores) is marked Web only');
-
-// --- in Khmer
-await p.goto(BASE + '/km/flexbox-grid', { waitUntil: 'networkidle' });
-await waitForEngine();
-const kmNote = await p.evaluate(() => [...document.querySelectorAll('article table')].map((t) => t.parentElement.firstElementChild).find((e) => e.tagName === 'P')?.textContent ?? '');
-check(/React Native/.test(kmNote) && /[ក-៿]/.test(kmNote), 'the note is in Khmer on the Khmer site: ' + kmNote.slice(0, 60));
 
 check(errors.length === 0, 'no page errors ' + JSON.stringify(errors));
 await b.close();

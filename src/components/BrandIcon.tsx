@@ -1,13 +1,17 @@
 import { clsx } from '@kbach/react';
 import {
   siBun,
+  siCodemirror,
   siExpo,
   siHtml5,
   siNextdotjs,
   siNpm,
   siPnpm,
   siPostcss,
+  siPrettier,
   siReact,
+  siTypescript,
+  siVercel,
   siVite,
   siYarn,
   type SimpleIcon,
@@ -16,7 +20,9 @@ import {
 // The official marks of what Kbach works with (Simple Icons, CC0), in each
 // brand's own color. The site uses them in the home page's "Works with" row,
 // the Installation page's setup tabs, and the npm / pnpm / yarn / bun (and
-// Expo / React Native CLI) tabs of its code blocks.
+// Expo / React Native CLI) tabs of its code blocks. TOOLS are what the site
+// itself is built with (the footer's "Built with" row): not a tab's brand, so
+// a code tab named "TypeScript" doesn't take an icon from them.
 
 export const BRANDS = {
   react: siReact,
@@ -32,6 +38,17 @@ export const BRANDS = {
 } satisfies Record<string, SimpleIcon>;
 
 export type Brand = keyof typeof BRANDS;
+
+const TOOLS = {
+  typescript: siTypescript,
+  codemirror: siCodemirror,
+  prettier: siPrettier,
+  vercel: siVercel,
+} satisfies Record<string, SimpleIcon>;
+
+const ICONS: Record<Brand | Tool, SimpleIcon> = { ...BRANDS, ...TOOLS };
+
+export type Tool = keyof typeof TOOLS;
 
 export function isBrand(name: string | undefined): name is Brand {
   return !!name && name in BRANDS;
@@ -51,8 +68,8 @@ function isInk(hex: string): boolean {
 }
 
 /** A brand's official mark, 1em square by default (className sizes it). */
-export function BrandIcon({ brand, className }: { brand: Brand; className?: string }) {
-  const icon: SimpleIcon = BRANDS[brand];
+export function BrandIcon({ brand, className }: { brand: Brand | Tool; className?: string }) {
+  const icon: SimpleIcon = ICONS[brand];
   return (
     <svg
       viewBox="0 0 24 24"

@@ -10,8 +10,8 @@ const covered = (p) => p.$$eval('[role="menuitem"]', (items) => items.filter((it
 
 for (const [w, h, label] of [[1440, 900, 'desktop'], [390, 844, 'phone']]) {
   const p = await b.newPage({ viewport: { width: w, height: h } });
-  await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
-  await p.waitForSelector('.cm-content'); await p.waitForTimeout(800);
+  await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
+  await p.waitForSelector('.cm-content', { state: 'attached' }); await p.waitForTimeout(800);
   await p.click('button[aria-label="More"]');
   await p.waitForTimeout(300);
   const hidden = await covered(p);

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animations: built-in ones and your own keyframes</title>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <!-- animate-spin, -ping, -pulse and -bounce come with Kbach; wiggle, shimmer, orbit, heartbeat,
+         slide and rise are keyframes in kbach.config.js. Each is a class. -->
+    <main class="mx-auto max-w-5xl py-6 sm:py-10">
+      <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-sm font-semibold text-accent">Motion</p>
+          <h1 class="mt-1 text-3xl font-bold tracking-tight">Animations are classes</h1>
+          <p class="mt-2 max-w-lg text-pretty text-muted">
+            Four come built in; the rest are keyframes in kbach.config.js. All of them stay still
+            for readers who ask for less motion (motion-safe:).
+          </p>
+        </div>
+        <button
+          id="replay"
+          class="flex shrink-0 items-center gap-2 self-start rounded-xl border border-line bg-card px-4 py-2 text-sm font-semibold transition hover:bg-well active:scale-95 sm:self-auto"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4 fill-none stroke-current stroke-2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M1 4v6h6" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </svg>
+          Replay the entrance
+        </button>
+      </header>
+
+      <!-- the cards rise in one after another: the same animation, a later delay each -->
+      <div id="cards" class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+        <figure class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise">
+          <div class="grid h-28 place-items-center rounded-xl bg-well/60">
+            <svg
+              viewBox="0 0 24 24"
+              class="size-9 motion-safe:animate-spin fill-none stroke-brand stroke-[3]"
+              stroke-linecap="round"
+            >
+              <path d="M12 3a9 9 0 1 0 9 9" />
+            </svg>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Spin</b
+            ><code class="text-xs text-muted">animate-spin</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:60ms]"
+        >
+          <div class="grid h-28 place-items-center rounded-xl bg-well/60">
+            <span class="relative flex size-4"
+              ><span
+                class="absolute inline-flex size-full rounded-full bg-brand opacity-75 motion-safe:animate-ping"
+              ></span
+              ><span class="relative inline-flex size-4 rounded-full bg-brand"></span
+            ></span>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Ping</b
+            ><code class="text-xs text-muted">animate-ping</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:120ms]"
+        >
+          <div
+            class="flex h-28 items-center gap-3 rounded-xl bg-well/60 px-4 motion-safe:animate-pulse"
+          >
+            <span class="size-10 shrink-0 rounded-full bg-line"></span>
+            <span class="flex-1 space-y-2"
+              ><span class="block h-2.5 w-4/5 rounded-full bg-line"></span
+              ><span class="block h-2.5 w-3/5 rounded-full bg-line"></span
+            ></span>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Pulse</b
+            ><code class="text-xs text-muted">animate-pulse</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:180ms]"
+        >
+          <div class="grid h-28 place-items-center rounded-xl bg-well/60">
+            <span
+              class="grid size-10 place-items-center rounded-full bg-card shadow-md motion-safe:animate-bounce"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5 fill-none stroke-brand stroke-2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </svg>
+            </span>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Bounce</b
+            ><code class="text-xs text-muted">animate-bounce</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:240ms]"
+        >
+          <div class="grid h-28 place-items-center rounded-xl bg-well/60">
+            <svg
+              viewBox="0 0 24 24"
+              class="size-9 origin-top motion-safe:animate-wiggle fill-none stroke-brand stroke-2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Wiggle</b
+            ><code class="text-xs text-muted">animate-wiggle</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:300ms]"
+        >
+          <div class="grid h-28 place-items-center rounded-xl bg-well/60 px-5">
+            <!-- a light that sweeps across: a gradient moved from -100% to 100% -->
+            <span class="relative block h-10 w-full overflow-hidden rounded-lg bg-line/70">
+              <span
+                class="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/60 to-transparent motion-safe:animate-shimmer dark:via-white/15"
+              ></span>
+            </span>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Shimmer</b
+            ><code class="text-xs text-muted">animate-shimmer</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:360ms]"
+        >
+          <div class="grid h-28 place-items-center rounded-xl bg-well/60">
+            <!-- a ring that turns, carrying a dot -->
+            <span
+              class="relative size-14 rounded-full border-2 border-dashed border-brand/40 motion-safe:animate-orbit"
+            >
+              <span
+                class="absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rounded-full bg-brand shadow-md shadow-brand/50"
+              ></span>
+            </span>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Orbit</b
+            ><code class="text-xs text-muted">animate-orbit</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:420ms]"
+        >
+          <div class="grid h-28 place-items-center rounded-xl bg-well/60">
+            <svg viewBox="0 0 24 24" class="size-10 fill-rose-5 motion-safe:animate-heartbeat">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+              />
+            </svg>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="block text-sm font-semibold">Heartbeat</b
+            ><code class="text-xs text-muted">animate-heartbeat</code>
+          </figcaption>
+        </figure>
+        <figure
+          class="col-span-2 m-0 rounded-2xl border border-line bg-card p-3 motion-safe:animate-rise [animation-delay:480ms] sm:col-span-3 lg:col-span-4"
+        >
+          <div class="grid h-20 place-items-center rounded-xl bg-well/60 px-6">
+            <!-- a loading bar with no end: a short bar slides along, over and over -->
+            <span
+              class="relative block h-1.5 w-full max-w-md overflow-hidden rounded-full bg-line/70"
+            >
+              <span
+                class="absolute inset-y-0 left-0 w-2/5 rounded-full bg-brand motion-safe:animate-slide"
+              ></span>
+            </span>
+          </div>
+          <figcaption class="mt-3 px-1">
+            <b class="text-sm font-semibold">Loading, no end</b>
+            <code class="ml-1 text-xs text-muted">animate-slide</code>
+          </figcaption>
+        </figure>
+      </div>
+
+      <!-- transitions: the change is the class (hover:), how it moves is transition + duration + ease -->
+      <h2 class="mt-12 text-xl font-bold tracking-tight">Hover them</h2>
+      <p class="mt-1 text-sm text-muted">
+        A transition eases between two classes: the one without hover: and the one with it.
+      </p>
+      <div class="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div
+          class="grid h-28 cursor-pointer place-items-center rounded-2xl bg-brand text-sm font-semibold text-white transition duration-300 ease-out hover:scale-105 hover:shadow-xl hover:shadow-brand/30 active:scale-95"
+        >
+          scale-105
+        </div>
+        <div
+          class="grid h-28 cursor-pointer place-items-center rounded-2xl border border-line bg-card text-sm font-semibold transition duration-300 ease-out hover:-translate-y-2 hover:shadow-xl hover:shadow-ink/10"
+        >
+          -translate-y-2
+        </div>
+        <div
+          class="group grid h-28 cursor-pointer place-items-center rounded-2xl border border-line bg-card text-sm font-semibold"
+        >
+          <span class="flex items-center gap-2"
+            >rotate-90
+            <svg
+              viewBox="0 0 24 24"
+              class="size-5 fill-none stroke-current stroke-2 transition duration-500 ease-out group-hover:rotate-90"
+              stroke-linecap="round"
+            >
+              <path d="M12 5v14M5 12h14" /></svg
+          ></span>
+        </div>
+        <div
+          class="grid h-28 cursor-pointer place-items-center rounded-2xl bg-well text-sm font-semibold transition-colors duration-500 hover:bg-ink hover:text-surface"
+        >
+          bg-ink
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

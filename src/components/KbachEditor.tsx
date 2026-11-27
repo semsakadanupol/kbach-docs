@@ -21,12 +21,16 @@ import { HighlightStyle, syntaxHighlighting, indentUnit } from '@codemirror/lang
 import { acceptCompletion, autocompletion, completeFromList, type Completion, type CompletionContext, type CompletionResult, type CompletionSource } from '@codemirror/autocomplete';
 import { forceLinting, forEachDiagnostic, linter, openLintPanel, type Diagnostic } from '@codemirror/lint';
 import { indentWithTab } from '@codemirror/commands';
+import { gotoLine } from '@codemirror/search';
 import { tags as t } from '@lezer/highlight';
-import { abbreviationTracker, wrapWithAbbreviation, EmmetKnownSyntax } from '@emmetio/codemirror6-plugin';
+import { abbreviationTracker, expandAbbreviation, wrapWithAbbreviation, EmmetKnownSyntax } from '@emmetio/codemirror6-plugin';
 import { BASE_UTILITIES, COLOR_PREFIXES } from '@kbach/react/tools';
 import { colorForClass, cssForClass, engineLoaded, isKnownClass, playgroundThemeVersion, suggestFor, themeColorNames } from '../playground/engine';
+import { tsCompletions, tsExtensions, tsPath as tsPathFacet } from '../playground/ts/codemirror';
+import { dropFile } from '../playground/ts/client';
 import { formatCode } from '../playground/format';
 import { documentParts, editableParts, skeletonKey } from '../playground/document';
+import { classListOpen, classListStrings, cnStrings, isValueString } from '../playground/classStrings';
 
 // A real code editor (CodeMirror 6) for the playground, with Kbach built in:
 // completion, hover and checks on class names, all from the real engine.
@@ -38,7 +42,7 @@ import { documentParts, editableParts, skeletonKey } from '../playground/documen
  * native (the React Native style objects, as JavaScript) are Kbach's output:
  * read-only, never checked for classes, never formatted.
  */
-export type EditorMode = 'html' | 'js' | 'ts' | 'css' | 'native';
+export type EditorMode = 'html' | 'js' | 'ts' | 'jsx' | 'tsx' | 'css' | 'native';
 
 /** Kbach's output, not the reader's code. */
 const generated = (mode: EditorMode) => mode === 'css' || mode === 'native';
@@ -47,19 +51,26 @@ const modeFacet = Facet.define<EditorMode, EditorMode>({ combine: (v) => v[0] ??
 
 // --- where the cursor is: inside a class list? -------------------------------
 const HTML_OPEN = [/\bclass(?:Name)?\s*=\s*(["'])([^"']*)$/];
+// (a classList call's arguments: classListOpen, which knows which of them are classes)
 const SCRIPT_OPEN = [
-  /classList\.(?:add|remove|toggle|replace|contains)\(\s*(?:(["'`])[^"'`]*\1\s*,\s*)*(["'`])([^"'`]*)$/,
   /\bclassName\s*\+?=\s*(["'`])([^"'`]*)$/,
   /\bclass\s*=\s*\\?(["'])([^"'`]*)$/,
+  // JSX (React mode): className={'…'} and the strings given to clsx() / cn()
+  /\bclassName\s*=\s*\{\s*(["'`])([^"'`]*)$/,
+  /\b(?:clsx|cn)\((?:[^()]*?,\s*)?(["'`])([^"'`]*)$/,
 ];
 
 /** The class text before `pos`, when `pos` is inside a class list. */
 function classContext(state: EditorState, pos: number): { start: number; token: string } | null {
   if (generated(state.facet(modeFacet))) return null;
   const before = state.sliceDoc(Math.max(0, pos - 2000), pos);
-  for (const re of state.facet(modeFacet) === 'html' ? HTML_OPEN : SCRIPT_OPEN) {
-    const m = re.exec(before);
+  const html = state.facet(modeFacet) === 'html';
+  const inClassList = html ? null : classListOpen(before);
+  for (const re of html ? HTML_OPEN : SCRIPT_OPEN) {
+    const m = inClassList === null ? re.exec(before) : [inClassList];
     if (!m) continue;
+    // a compared or joined string (bag === 'added', 'bg-' + name) is a value, not classes
+    if (!html && isValueString(before.slice(0, before.length - m[m.length - 1].length - 1), '')) return null;
     const token = /[^\s"'`]*$/.exec(m[m.length - 1])![0];
     if (token.includes('$')) return null; // a template's ${…}
     return { start: pos - token.length, token };
@@ -94,12 +105,20 @@ function classRanges(doc: string, mode: EditorMode): { from: number; cls: string
     for (const m of doc.matchAll(/\bclass(?:Name)?\s*=\s*(["'])([^"']*)\1/g)) addValue(m[2], m.index! + m[0].indexOf(m[1]) + 1);
     return found;
   }
-  for (const m of doc.matchAll(/classList\.(?:add|remove|toggle|replace|contains)\(([^)]*)\)/g)) {
+  for (const m of doc.matchAll(/classList\.(add|remove|toggle|replace|contains)\(([^)]*)\)/g)) {
     const argsAt = m.index! + m[0].indexOf('(') + 1;
-    for (const s of m[1].matchAll(/(["'`])([^"'`]*)\1/g)) addValue(s[2], argsAt + s.index! + 1);
+    for (const s of classListStrings(m[1], m[2])) addValue(s.text, argsAt + s.at);
   }
   for (const m of doc.matchAll(/\bclassName\s*\+?=\s*(["'`])([^"'`]*)\1/g)) addValue(m[2], m.index! + m[0].lastIndexOf(m[1], m[0].length - m[2].length - 1) + 1);
   for (const m of doc.matchAll(/\bclass\s*=\s*\\?(["'])([^"'`]*?)\\?\1/g)) addValue(m[2], m.index! + m[0].indexOf(m[1]) + 1);
+  if (mode === 'jsx' || mode === 'tsx') {
+    // className={'…'} (className="…" is found above), and the strings given to clsx() / cn()
+    for (const m of doc.matchAll(/\bclassName\s*=\s*\{\s*(["'`])([^"'`]*)\1/g)) addValue(m[2], m.index! + m[0].lastIndexOf(m[1], m[0].length - m[2].length - 1) + 1);
+    for (const m of doc.matchAll(/\b(?:clsx|cn)\(([^)]*)\)/g)) {
+      const argsAt = m.index! + m[0].indexOf('(') + 1;
+      for (const s of cnStrings(m[1])) addValue(s.text, argsAt + s.at);
+    }
+  }
   return found;
 }
 
@@ -166,6 +185,12 @@ function kbachCompletions(ctx: CompletionContext): CompletionResult | null {
 const inModes = (modes: EditorMode[], source: CompletionSource): CompletionSource => (ctx) =>
   modes.includes(ctx.state.facet(modeFacet)) ? source(ctx) : null;
 
+/** A source for when the TypeScript service isn't on this editor (it knows the names better). */
+const withoutTs = (source: CompletionSource): CompletionSource => (ctx) => (ctx.state.facet(tsPathFacet) ? null : source(ctx));
+
+/** Inside a class list, or on a class: Kbach's completion and hover there, not TypeScript's. */
+const inClassText = (state: EditorState, pos: number) => classContext(state, pos) !== null || tokenAt(state, pos) !== null;
+
 const jsSnippets = completeFromList(snippets);
 const tsSnippets = completeFromList(typescriptSnippets);
 
@@ -223,19 +248,76 @@ const classHover = hoverTooltip((view, pos) => {
 });
 
 // --- color swatches in front of color classes, like an IDE's color decorators --
+// --- the color picker (as kbach-vscode's): a swatch of an arbitrary hex color (bg-[#ff6600]) opens
+// the browser's color wheel, and the color picked goes into the code as it's dragged. One input,
+// kept on the page: the swatches are redrawn on every change, and an input inside one would close
+// the wheel mid-drag. An 8-digit hex keeps its alpha (the wheel has none).
+let picker: HTMLInputElement | null = null;
+let picking: { view: EditorView; from: number; to: number; alpha: string } | null = null;
+
+const sixDigits = (hex: string) => (hex.length === 4 || hex.length === 5 ? '#' + [...hex.slice(1, 4)].map((c) => c + c).join('') : hex.slice(0, 7)).toLowerCase();
+
+function openPicker(view: EditorView, from: number, to: number, hex: string, at: DOMRect) {
+  if (!picker) {
+    picker = document.createElement('input');
+    picker.type = 'color';
+    picker.tabIndex = -1;
+    picker.setAttribute('aria-label', 'Pick a color');
+    picker.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0';
+    document.body.append(picker);
+    picker.addEventListener('input', () => {
+      if (!picking || !picker) return;
+      const value = picker.value + picking.alpha;
+      picking.view.dispatch({ changes: { from: picking.from, to: picking.to, insert: value }, userEvent: 'input.color' });
+      picking.to = picking.from + value.length;
+    });
+    picker.addEventListener('change', () => (picking = null));
+  }
+  // an alpha (#rrggbbaa, #rgba) stays as it is
+  const alpha = hex.length === 9 ? hex.slice(7) : hex.length === 5 ? hex.slice(4).repeat(2) : '';
+  picking = { view, from, to, alpha };
+  picker.value = sixDigits(hex);
+  picker.style.left = at.left + 'px';
+  picker.style.top = at.bottom + 'px';
+  try {
+    picker.showPicker();
+  } catch {
+    picker.click(); // a browser without showPicker, or that refuses it here
+  }
+}
+
 class SwatchWidget extends WidgetType {
-  constructor(readonly color: string) {
+  /** `pick`: where an arbitrary hex value sits in the code, to open the picker on it */
+  constructor(
+    readonly color: string,
+    readonly pick: { from: number; to: number; hex: string } | null = null,
+  ) {
     super();
   }
   eq(other: SwatchWidget) {
-    return other.color === this.color;
+    return other.color === this.color && other.pick?.from === this.pick?.from && other.pick?.hex === this.pick?.hex;
   }
-  toDOM() {
+  toDOM(view: EditorView) {
     const s = document.createElement('span');
     s.className = 'cm-kb-swatch';
     s.style.background = this.color;
-    s.setAttribute('aria-hidden', 'true');
+    const pick = this.pick;
+    if (!pick) {
+      s.setAttribute('aria-hidden', 'true');
+      return s;
+    }
+    s.classList.add('cm-kb-swatch-pick');
+    s.title = 'Pick a color';
+    s.setAttribute('role', 'button');
+    s.setAttribute('aria-label', 'Pick a color for ' + pick.hex);
+    s.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      openPicker(view, pick.from, pick.to, pick.hex, s.getBoundingClientRect());
+    });
     return s;
+  }
+  ignoreEvent() {
+    return true;
   }
 }
 
@@ -248,7 +330,11 @@ function swatchDecorations(view: EditorView): DecorationSet {
     .sort((a, b) => a.from - b.from);
   for (const { from, cls } of found) {
     const color = colorForClass(cls);
-    if (color) builder.add(from, from, Decoration.widget({ widget: new SwatchWidget(color), side: -1 }));
+    if (!color) continue;
+    // an arbitrary hex value (bg-[#ff6600], hover:text-[#abc]): its swatch opens the picker
+    const hex = /\[(#[0-9a-fA-F]{3,8})\]/.exec(cls);
+    const pick = hex && [4, 5, 7, 9].includes(hex[1].length) ? { from: from + hex.index + 1, to: from + hex.index + 1 + hex[1].length, hex: hex[1] } : null;
+    builder.add(from, from, Decoration.widget({ widget: new SwatchWidget(color, pick), side: -1 }));
   }
   return builder.finish();
 }
@@ -792,6 +878,31 @@ const kbachTheme = EditorView.theme(
     '.cm-completionMatchedText': { textDecoration: 'none', color: 'var(--ed-match)', fontWeight: '600' },
     '.cm-completionDetail': { color: 'var(--ed-muted)', fontStyle: 'normal', marginLeft: '0.75em' },
     '.cm-completionInfo': { padding: '0', maxWidth: 'min(26rem, calc(100vw - 16px))' },
+    // TypeScript's hover, suggestion details and signature help (playground/ts/codemirror.ts)
+    '.cm-ts-info': { maxWidth: 'min(34rem, calc(100vw - 16px))', maxHeight: '18rem', overflow: 'auto', fontSize: '12.5px', lineHeight: '1.5' },
+    '.cm-ts-sig': {
+      margin: '0',
+      padding: '6px 10px',
+      fontFamily: '"Geist Mono", ui-monospace, monospace',
+      whiteSpace: 'pre-wrap',
+      wordBreak: 'break-word',
+    },
+    '.cm-ts-docs': { padding: '6px 10px', borderTop: '1px solid var(--ed-widget-border)', whiteSpace: 'pre-wrap' },
+    '.cm-ts-tags': { padding: '4px 10px 6px', color: 'var(--ed-muted)', fontSize: '11.5px', whiteSpace: 'pre-wrap' },
+    '.cm-ts-param': { color: 'var(--ed-match)', fontWeight: '700' },
+    '.cm-ts-rename': { display: 'flex', flexDirection: 'column', gap: '2px', padding: '4px' },
+    '.cm-ts-rename input': {
+      font: 'inherit',
+      fontFamily: '"Geist Mono", ui-monospace, monospace',
+      fontSize: '12.5px',
+      padding: '3px 6px',
+      minWidth: '14rem',
+      color: 'var(--ed-fg)',
+      backgroundColor: 'var(--ed-bg)',
+      border: '1px solid var(--ed-match)',
+      borderRadius: '3px',
+      outline: 'none',
+    },
     '.cm-kb-css': {
       margin: '0',
       padding: '8px 12px',
@@ -823,6 +934,9 @@ const kbachTheme = EditorView.theme(
       boxShadow: '0 0 0 1px var(--ed-swatch-ring)',
       transform: 'translateY(-1px)',
     },
+    // an arbitrary color's swatch opens the picker: it looks clickable
+    '.cm-kb-swatch-pick': { cursor: 'pointer' },
+    '.cm-kb-swatch-pick:hover': { boxShadow: '0 0 0 2px var(--ed-match)' },
     '.cm-kb-errline': { backgroundColor: 'var(--ed-error-line)' },
     '.cm-kb-errmsg': {
       marginLeft: '2.5ch',
@@ -833,6 +947,9 @@ const kbachTheme = EditorView.theme(
       pointerEvents: 'none',
       whiteSpace: 'pre',
     },
+    // with wrap on, the message wraps too: a long one (an HTML page's "add <script src=…>") held
+    // every line at its width, and the editor scrolled sideways (2026-11-27)
+    '.cm-lineWrapping .cm-kb-errmsg': { whiteSpace: 'normal', overflowWrap: 'anywhere' },
     '.cm-kb-locked': { opacity: '0.6' },
     '.cm-kb-picked': { backgroundColor: 'rgba(199, 162, 93, 0.16)', outline: '1px solid rgba(199, 162, 93, 0.55)', borderRadius: '2px' },
     // Emmet: the abbreviation being typed, and its preview
@@ -873,7 +990,7 @@ function languageFor(mode: EditorMode): Extension {
   // the generated stylesheet: selectable, searchable, copyable, but Kbach writes it
   if (mode === 'css') return [cssLanguage(), modeFacet.of(mode), EditorState.readOnly.of(true)];
   if (mode === 'native') return [javascript(), modeFacet.of(mode), EditorState.readOnly.of(true)];
-  if (mode !== 'html') return [javascript({ typescript: mode === 'ts' }), modeFacet.of(mode)];
+  if (mode !== 'html') return [javascript({ typescript: mode === 'ts' || mode === 'tsx', jsx: mode === 'jsx' || mode === 'tsx' }), modeFacet.of(mode)];
   return [
     html({ autoCloseTags: true }),
     modeFacet.of(mode),
@@ -910,6 +1027,14 @@ export interface EditorHandle {
   openProblems(): void;
   format(): Promise<void>;
   focus(): void;
+  /** Types text at the cursor (the phone's key row: < > / " and so on). */
+  insert(text: string): void;
+  /** What Tab does: expands an Emmet abbreviation in HTML, else indents. */
+  tab(): void;
+  /** The code in the editor now (it takes new code from its props an effect after a render). */
+  text(): string;
+  /** The Go to line box (Ctrl+G), as the command palette opens it. */
+  goToLineBox(): void;
 }
 
 interface KbachEditorProps {
@@ -935,11 +1060,15 @@ interface KbachEditorProps {
   recheck?: string | number;
   /** index.html: its <!doctype html>, <html>, <head> and <body> can't be deleted, only what's inside them. */
   lockSkeleton?: boolean;
+  /** This file's name for the TypeScript service (/App.jsx, /script.ts, /kbach.config.js); none: no TypeScript features. */
+  tsPath?: string | null;
+  /** F12 / Ctrl+click found a definition in another of the reader's files. */
+  onOpenFile?: (path: string, from: number, to: number) => void;
 }
 
 /** CodeMirror with Kbach completion, hover and checks. Controlled by `value`/`onChange`. */
 export const KbachEditor = forwardRef<EditorHandle, KbachEditorProps>(function KbachEditor(
-  { value, onChange, mode = 'html', wrap = false, docKey, hidden = false, label, onStatus, onRun, onNotice, errors, recheck, lockSkeleton = false },
+  { value, onChange, mode = 'html', wrap = false, docKey, hidden = false, label, onStatus, onRun, onNotice, errors, recheck, lockSkeleton = false, tsPath = null, onOpenFile },
   ref,
 ) {
   const host = useRef<HTMLDivElement>(null);
@@ -950,8 +1079,26 @@ export const KbachEditor = forwardRef<EditorHandle, KbachEditorProps>(function K
   const language = useRef(new Compartment());
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const cb = useRef({ onStatus, onRun, onNotice, mode });
-  cb.current = { onStatus, onRun, onNotice, mode };
+  const cb = useRef({ onStatus, onRun, onNotice, mode, onOpenFile });
+  cb.current = { onStatus, onRun, onNotice, mode, onOpenFile };
+  const tsCompartment = useRef(new Compartment());
+  /** The TypeScript features for a file (none for HTML and Kbach's outputs). */
+  const tsFor = (path: string | null): Extension =>
+    path
+      ? [
+          tsPathFacet.of(path),
+          tsExtensions({
+            inClassText,
+            onNotice: (text) => cb.current.onNotice?.(text, 'ok'),
+            onOpen: (file, from, to) => {
+              const v = view.current;
+              // in this file: there; in another of the reader's files: the playground opens it
+              if (v && file === path) v.dispatch({ selection: { anchor: from, head: to }, effects: EditorView.scrollIntoView(from, { y: 'center' }) });
+              else cb.current.onOpenFile?.(file, from, to);
+            },
+          }),
+        ]
+      : [];
   const lastStatus = useRef('');
 
   const format = async () => {
@@ -1001,6 +1148,25 @@ export const KbachEditor = forwardRef<EditorHandle, KbachEditorProps>(function K
     focus() {
       view.current?.focus();
     },
+    insert(text) {
+      const v = view.current;
+      if (!v || v.state.readOnly) return;
+      v.dispatch(v.state.replaceSelection(text), { scrollIntoView: true, userEvent: 'input.type' });
+      v.focus();
+    },
+    tab() {
+      const v = view.current;
+      if (!v || v.state.readOnly) return;
+      if (!(cb.current.mode === 'html' && expandAbbreviation(v))) indentWithTab.run?.(v);
+      v.focus();
+    },
+    text: () => view.current?.state.doc.toString() ?? '',
+    goToLineBox() {
+      const v = view.current;
+      if (!v) return;
+      v.focus();
+      gotoLine(v);
+    },
   }));
 
   const reportStatus = (state: EditorState, focused: boolean) => {
@@ -1043,6 +1209,8 @@ export const KbachEditor = forwardRef<EditorHandle, KbachEditorProps>(function K
               { key: 'Shift-Alt-f', run: () => (void formatRef.current(), true) },
               { key: 'Mod-Enter', run: () => (cb.current.onRun?.(), true) },
               { key: 'Mod-s', run: () => (cb.current.onRun?.(), true), preventDefault: true },
+              // VS Code's Ctrl+G: go to a line (find next is F3, in both)
+              { key: 'Mod-g', run: gotoLine, preventDefault: true },
             ]),
           ),
           keymap.of([indentWithTab]),
@@ -1055,8 +1223,10 @@ export const KbachEditor = forwardRef<EditorHandle, KbachEditorProps>(function K
               kbachCompletions,
               // HTML tags and attributes; in a script, its own names, snippets and the page's globals
               inModes(['html'], htmlCompletionSource),
-              inModes(['js', 'ts'], localCompletionSource),
-              inModes(['js', 'ts'], globalsSource),
+              // in a file the TypeScript service knows: its suggestions (names, members, imports, JSX)
+              tsCompletions(inClassText),
+              inModes(['js', 'ts'], withoutTs(localCompletionSource)),
+              inModes(['js', 'ts'], withoutTs(globalsSource)),
               inModes(['js'], jsSnippets),
               inModes(['ts'], tsSnippets),
             ],
@@ -1065,6 +1235,9 @@ export const KbachEditor = forwardRef<EditorHandle, KbachEditorProps>(function K
           }),
           classHover,
           kbachLint,
+          tsCompartment.current.of(tsFor(tsPath)),
+          // Alt+click adds a cursor and Ctrl/Cmd+click goes to a definition, as in VS Code
+          EditorView.clickAddsSelectionRange.of((e) => e.altKey),
           swatchPlugin,
           pickedField,
           runErrorsField,
@@ -1104,6 +1277,15 @@ export const KbachEditor = forwardRef<EditorHandle, KbachEditorProps>(function K
   useEffect(() => {
     view.current?.dispatch({ effects: language.current.reconfigure(languageFor(mode)) });
   }, [mode]);
+
+  // the file got another name (script.js → script.ts, App.jsx → App.tsx): the service drops the old one
+  const lastTsPath = useRef(tsPath);
+  useEffect(() => {
+    if (lastTsPath.current && lastTsPath.current !== tsPath) void dropFile(lastTsPath.current);
+    lastTsPath.current = tsPath;
+    view.current?.dispatch({ effects: tsCompartment.current.reconfigure(tsFor(tsPath)) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tsFor reads refs only
+  }, [tsPath]);
 
   // shown again after being hidden: measure, since sizes were zero meanwhile
   useEffect(() => {

@@ -2,10 +2,10 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 /**
- * The docs build to plain files (`out/`): one HTML file per page, in English
- * and in Khmer, that any static host can serve. Nothing runs on a server.
+ * The docs build to plain files (`out/`): one HTML file per page, that any
+ * static host can serve. Nothing runs on a server.
  *
- *   npm run dev     the site at http://localhost:3000 (/en, /km), live as you edit
+ *   npm run dev     the site at http://localhost:3000, live as you edit
  *   npm run build   out/ (then `npm run start` to look at it)
  */
 const nextConfig: NextConfig = {
@@ -15,12 +15,15 @@ const nextConfig: NextConfig = {
   // so they're off.
   experimental: {
     agentFeedback: true,
-    // The site has two root layouts (src/app/[lang] for every page, and
-    // src/app/(start) for /), so its 404 page is the global one
-    // (src/app/global-not-found.tsx)
+    // The 404 page (src/app/global-not-found.tsx) brings its own <html> and
+    // site frame, outside the root layout, for any address with no page
     globalNotFound: true,
   },
   turbopack: {
+    // This folder is its own project (the kbach-docs repository) even when it's checked out
+    // inside the Kbach repository, whose package-lock.json Next.js would otherwise take as
+    // the root: it then wrote build files to apps/kbach-docs/apps/kbach-docs/.next.
+    root: process.cwd(),
     rules: {
       // `import text from './file?raw'` gives the file's text as a string (the
       // playground's example files and the script it puts in its canvas)

@@ -1,9 +1,10 @@
 'use client';
 
 import { HeroBackdrop, Landing } from '../Landing';
+import { BackToTop } from './BackToTop';
 import { Footer } from './Footer';
 
-/** The home page (/ and /km): the hero's light behind the header, then Landing.tsx's sections. */
+/** The home page (/): the hero's light behind the header, then Landing.tsx's sections. */
 export function HomePage() {
   return (
     // pulled up under the bar (its 64px and the 1px gold line), so the hero's light starts at the top
@@ -13,6 +14,7 @@ export function HomePage() {
         <Landing />
         <Footer />
       </main>
+      <BackToTop />
     </div>
   );
 }

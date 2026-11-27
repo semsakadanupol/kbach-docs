@@ -4,17 +4,15 @@
 // address. Only written when the site's address is known (KBACH_DOCS_URL):
 // every URL in it must be a full one.
 import { SITE } from './content';
-import { NAV, type DocPage } from './docs';
-import { KM } from './km';
-import { localHref, type Locale } from './locale';
+import { NAV, hrefFor, type DocPage } from './docs';
 import { GITHUB } from './site';
 import { HOME_META, SITE_NAME } from './metadata';
 
 const WEBSITE_ID = () => SITE + '/#website';
 const ORG_ID = () => SITE + '/#organization';
 
-/** The site itself: on the home pages (/en, /km) and on /. */
-export function siteJsonLd(locale: Locale): object | null {
+/** The site itself: on the home page (/). */
+export function siteJsonLd(): object | null {
   if (!SITE) return null;
   return {
     '@context': 'https://schema.org',
@@ -25,8 +23,8 @@ export function siteJsonLd(locale: Locale): object | null {
         url: SITE + '/',
         name: 'Kbach',
         alternateName: ['Kbach Docs', 'Kbach CSS'],
-        description: HOME_META.en.description,
-        inLanguage: ['en', 'km'],
+        description: HOME_META.description,
+        inLanguage: 'en',
         publisher: { '@id': ORG_ID() },
       },
       {
@@ -40,8 +38,8 @@ export function siteJsonLd(locale: Locale): object | null {
       {
         '@type': 'SoftwareSourceCode',
         name: 'Kbach',
-        description: HOME_META[locale].description,
-        url: SITE + localHref('/', locale),
+        description: HOME_META.description,
+        url: SITE + '/',
         codeRepository: GITHUB,
         programmingLanguage: ['Rust', 'TypeScript'],
         runtimePlatform: ['React', 'React Native', 'Web browser'],
@@ -55,15 +53,13 @@ export function siteJsonLd(locale: Locale): object | null {
 /** A docs page: where it sits in the docs, and the page as an article. */
 export function docJsonLd(page: DocPage): object | null {
   if (!SITE) return null;
-  const { locale } = page;
-  const name = (english: string) => (locale === 'km' ? (KM[english] ?? english) : english);
-  const home = SITE + localHref('/', locale);
-  const url = SITE + localHref('/' + page.slug, locale);
+  const home = SITE + '/';
+  const url = SITE + hrefFor(page.slug);
   // A section has no page of its own; its first page stands for it.
   const sectionFirst = NAV.find((s) => s.title === page.section)?.pages[0];
   const crumbs = [
-    { name: SITE_NAME[locale], item: home },
-    ...(sectionFirst && sectionFirst !== page.slug ? [{ name: name(page.section), item: SITE + localHref('/' + sectionFirst, locale) }] : []),
+    { name: SITE_NAME, item: home },
+    ...(sectionFirst && sectionFirst !== page.slug ? [{ name: page.section, item: SITE + hrefFor(sectionFirst) }] : []),
     { name: page.title, item: url },
   ];
   return {
@@ -78,7 +74,7 @@ export function docJsonLd(page: DocPage): object | null {
         headline: page.title,
         description: page.description,
         url,
-        inLanguage: locale,
+        inLanguage: 'en',
         ...(page.updated && { dateModified: page.updated }),
         isPartOf: { '@id': WEBSITE_ID() },
         publisher: { '@id': ORG_ID() },

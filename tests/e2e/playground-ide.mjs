@@ -1,5 +1,6 @@
 // The playground's CodeMirror editor and the canvas link fix, in real Chromium.
 import { chromium } from 'playwright';
+import { cdnPage } from './example-link.js';
 let failures = 0;
 const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
@@ -9,7 +10,7 @@ const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1440, height: 1000 } });
 const errors = [];
 p.on('pageerror', (e) => !/about:srcdoc/.test(e.stack || '') && errors.push(e.message)); // the canvas runs the reader's code: its errors are theirs
-await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
 await p.waitForSelector('.cm-content');
 await p.waitForTimeout(800);
 const editorText = () => p.$$eval('.cm-line', (ls) => ls.map((l) => l.textContent).join('\n'));
@@ -37,7 +38,8 @@ const setCode = async (code) => {
 await p.click('button[role="tab"]:has-text("script")');
 await p.fill('.cm-editor:visible .cm-content', '');
 await p.click('button[role="tab"]:has-text("index.html")');
-await setCode('<div id="keep" class="p-4 bg-rose-6 text-white">kept</div><a id="hash" href="#">hash link</a> <a id="page" href="/installation">docs link</a><form id="f"><button id="go">submit</button></form>');
+// (a whole page, as HTML mode has one: Kbach from its CDN script styles #keep)
+await setCode(cdnPage('<div id="keep" class="p-4 bg-rose-6 text-white">kept</div><a id="hash" href="#">hash link</a> <a id="page" href="/installation">docs link</a><form id="f"><button id="go">submit</button></form>'));
 const frame = p.frameLocator('iframe[title="Playground canvas"]');
 await frame.locator('#hash').click();
 await frame.locator('#page').click();

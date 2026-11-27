@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabs and accordion: a sliding line, panels that open smoothly</title>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <main class="mx-auto max-w-2xl space-y-10 py-6 sm:py-10">
+      <!-- the tabs: the line slides under the picked one; ← and → move between them -->
+      <section
+        class="overflow-hidden rounded-3xl border border-line bg-card shadow-xl shadow-ink/5"
+      >
+        <div class="px-6 pt-6">
+          <h1 class="text-xl font-bold tracking-tight">Settings</h1>
+          <p class="mt-1 text-sm text-muted">
+            Your account, what we tell you about, and how you pay.
+          </p>
+        </div>
+        <div class="relative mt-5 border-b border-line">
+          <div
+            id="tabs"
+            role="tablist"
+            aria-label="Settings"
+            class="flex gap-6 overflow-x-auto px-6 [scrollbar-width:none]"
+          >
+            <button
+              role="tab"
+              id="tab-account"
+              aria-controls="account"
+              aria-selected="true"
+              class="py-3 text-sm font-semibold whitespace-nowrap text-muted transition-colors hover:text-ink aria-selected:text-ink"
+            >
+              Account
+            </button>
+            <button
+              role="tab"
+              id="tab-notifications"
+              aria-controls="notifications"
+              aria-selected="false"
+              tabindex="-1"
+              class="flex items-center gap-2 py-3 text-sm font-semibold whitespace-nowrap text-muted transition-colors hover:text-ink aria-selected:text-ink"
+            >
+              Notifications
+              <span class="rounded-full bg-brand px-1.5 text-[11px] text-white tabular-nums"
+                >3</span
+              >
+            </button>
+            <button
+              role="tab"
+              id="tab-billing"
+              aria-controls="billing"
+              aria-selected="false"
+              tabindex="-1"
+              class="py-3 text-sm font-semibold whitespace-nowrap text-muted transition-colors hover:text-ink aria-selected:text-ink"
+            >
+              Billing
+            </button>
+          </div>
+          <span
+            id="line"
+            class="absolute bottom-0 left-0 h-0.5 rounded-full bg-brand transition-all duration-300 ease-out"
+          ></span>
+        </div>
+
+        <div
+          id="account"
+          role="tabpanel"
+          aria-labelledby="tab-account"
+          class="p-6 motion-safe:animate-swap"
+        >
+          <div class="flex items-center gap-4">
+            <span
+              class="grid size-14 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-sky-5 to-indigo-6 text-lg font-bold text-white"
+              >SK</span
+            >
+            <div class="min-w-0">
+              <p class="truncate font-semibold">Sokha Kim</p>
+              <p class="truncate text-sm text-muted">Member since March 2024</p>
+            </div>
+            <button
+              class="ml-auto shrink-0 rounded-lg border border-line px-3 py-1.5 text-sm font-medium transition hover:bg-well"
+            >
+              Change photo
+            </button>
+          </div>
+          <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            <label class="block text-sm font-medium"
+              >Name<input
+                value="Sokha Kim"
+                class="mt-1.5 block h-10 w-full rounded-lg border border-line bg-surface px-3 font-normal outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/15"
+            /></label>
+            <label class="block text-sm font-medium"
+              >Email<input
+                value="sokha@example.com"
+                class="mt-1.5 block h-10 w-full rounded-lg border border-line bg-surface px-3 font-normal outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/15"
+            /></label>
+          </div>
+        </div>
+
+        <div
+          id="notifications"
+          role="tabpanel"
+          aria-labelledby="tab-notifications"
+          hidden
+          class="divide-y divide-line px-6 py-2 motion-safe:animate-swap"
+        >
+          <!-- switches drawn with classes: the knob slides when the box is checked (peer-checked:) -->
+          <label class="flex cursor-pointer items-center justify-between gap-4 py-4">
+            <span class="min-w-0"
+              ><b class="block text-sm font-semibold">Mentions</b
+              ><span class="block text-sm text-muted">When someone writes your name</span></span
+            >
+            <input type="checkbox" checked class="peer sr-only" />
+            <span
+              class="relative h-6 w-11 shrink-0 rounded-full bg-well ring-1 ring-line transition peer-checked:bg-brand peer-checked:ring-brand peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30 after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5"
+            ></span>
+          </label>
+          <label class="flex cursor-pointer items-center justify-between gap-4 py-4">
+            <span class="min-w-0"
+              ><b class="block text-sm font-semibold">Weekly digest</b
+              ><span class="block text-sm text-muted"
+                >One email on Monday, with what you missed</span
+              ></span
+            >
+            <input type="checkbox" class="peer sr-only" />
+            <span
+              class="relative h-6 w-11 shrink-0 rounded-full bg-well ring-1 ring-line transition peer-checked:bg-brand peer-checked:ring-brand peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30 after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5"
+            ></span>
+          </label>
+          <label class="flex cursor-pointer items-center justify-between gap-4 py-4">
+            <span class="min-w-0"
+              ><b class="block text-sm font-semibold">Product news</b
+              ><span class="block text-sm text-muted">New features, a few times a year</span></span
+            >
+            <input type="checkbox" checked class="peer sr-only" />
+            <span
+              class="relative h-6 w-11 shrink-0 rounded-full bg-well ring-1 ring-line transition peer-checked:bg-brand peer-checked:ring-brand peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30 after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5"
+            ></span>
+          </label>
+        </div>
+
+        <div
+          id="billing"
+          role="tabpanel"
+          aria-labelledby="tab-billing"
+          hidden
+          class="space-y-4 p-6 motion-safe:animate-swap"
+        >
+          <div
+            class="flex items-center justify-between gap-4 rounded-2xl bg-linear-to-br from-brand to-indigo-7 p-5 text-white"
+          >
+            <div>
+              <p class="text-sm text-white/80">Current plan</p>
+              <p class="mt-1 text-2xl font-bold">
+                Pro <span class="text-base font-medium text-white/80">· $19 a month</span>
+              </p>
+            </div>
+            <button
+              class="shrink-0 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-semibold ring-1 ring-white/30 backdrop-blur transition hover:bg-white/25"
+            >
+              Change
+            </button>
+          </div>
+          <div class="flex items-center gap-4 rounded-2xl border border-line p-4">
+            <span class="grid h-10 w-14 shrink-0 place-items-center rounded-lg bg-well text-muted">
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5 fill-none stroke-current stroke-2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="1" y="4" width="22" height="16" rx="2" />
+                <path d="M1 10h22" />
+              </svg>
+            </span>
+            <div class="min-w-0 flex-1 text-sm">
+              <b class="block font-semibold">Card ending in 4242</b
+              ><span class="text-muted">Expires 08 / 2028</span>
+            </div>
+            <button class="shrink-0 text-sm font-semibold text-accent hover:underline">Edit</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- the accordion: an answer opens to its own height (grid rows 0fr → 1fr), the + turns to × -->
+      <section>
+        <h2 class="text-xl font-bold tracking-tight">Questions</h2>
+        <div
+          id="faq"
+          class="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card"
+        >
+          <div>
+            <button
+              aria-expanded="false"
+              class="group flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-semibold transition-colors hover:bg-well/50"
+            >
+              Can I change my plan later?
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5 shrink-0 fill-none stroke-muted stroke-2 transition-transform duration-300 group-aria-expanded:rotate-45"
+                stroke-linecap="round"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+            <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out">
+              <div class="overflow-hidden">
+                <p class="px-5 pb-4 text-sm leading-6 text-muted">
+                  Any time, from Billing. Moving up takes effect at once; moving down starts with
+                  the next bill.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <button
+              aria-expanded="false"
+              class="group flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-semibold transition-colors hover:bg-well/50"
+            >
+              What happens to my work if I leave?
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5 shrink-0 fill-none stroke-muted stroke-2 transition-transform duration-300 group-aria-expanded:rotate-45"
+                stroke-linecap="round"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+            <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out">
+              <div class="overflow-hidden">
+                <p class="px-5 pb-4 text-sm leading-6 text-muted">
+                  It stays yours. Download everything as files before you go, or keep the account on
+                  the free plan and come back whenever you like.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <button
+              aria-expanded="false"
+              class="group flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-semibold transition-colors hover:bg-well/50"
+            >
+              Do you have a discount for schools and charities?
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5 shrink-0 fill-none stroke-muted stroke-2 transition-transform duration-300 group-aria-expanded:rotate-45"
+                stroke-linecap="round"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+            <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out">
+              <div class="overflow-hidden">
+                <p class="px-5 pb-4 text-sm leading-6 text-muted">
+                  Yes: half price on every plan. Write to us from your school's or charity's address
+                  and we'll set it up.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

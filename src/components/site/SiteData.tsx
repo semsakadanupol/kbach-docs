@@ -3,8 +3,8 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { PageInfo } from '../../lib/docs';
 
-// The docs' page names in the page's language (lib/content.ts pageInfos),
-// handed down by the language's root layout. The sidebar, the pager, the
+// The docs' page names (lib/content.ts pageInfos), handed down by the root
+// layout (app/_site/layout.tsx). The sidebar, the pager, the
 // home page and the 404 page read them from here.
 
 const SiteDataContext = createContext<PageInfo[]>([]);

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { clsx } from "@kbach/react";
-import { useT } from "../lib/i18n";
 import { SiteLink } from "./SiteLink";
 import { Logo } from "./Logo";
 import { BrandIcon, type Brand } from "./BrandIcon";
@@ -62,7 +61,6 @@ const POINTS: [string, Point][] = [["engine", ENGINE], ...PACKAGES.map((p) => ["
 type Active = { kind: "tool"; name: string } | { kind: "package"; id: PackageId } | { kind: "engine" } | null;
 
 export function WorksWith({ className }: { className?: string }) {
-  const t = useT();
   const [active, setActive] = useState<Active>(null);
   const box = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState<Fit | null>(null);
@@ -171,8 +169,8 @@ export function WorksWith({ className }: { className?: string }) {
   );
 
   return (
-    <figure className={clsx("m-0 w-full", className)} aria-label={t("Works with")}>
-      <figcaption className="mb-2 text-center text-xs font-semibold tracking-[0.12em] text-faint uppercase">{t("Works with")}</figcaption>
+    <figure className={clsx("m-0 w-full", className)} aria-label="Works with">
+      <figcaption className="mb-2 text-center text-xs font-semibold tracking-[0.12em] text-faint uppercase">Works with</figcaption>
       {/* taller than wide on a phone: more room between the labels stacked on each side */}
       <div ref={box} data-network="" className="relative mx-auto aspect-[4/5] w-full max-w-[30rem] sm:aspect-square">
         {/* the lines: in the box's px once measured (in % before, as the page is built) */}
@@ -185,7 +183,7 @@ export function WorksWith({ className }: { className?: string }) {
         <SiteLink
           href="/how-it-works"
           {...on({ kind: "engine" })}
-          aria-label={t("How Kbach works")}
+          aria-label="How Kbach works"
           data-key="engine"
           style={at("engine", ENGINE)}
           className={clsx(
@@ -233,13 +231,13 @@ export function WorksWith({ className }: { className?: string }) {
               )}
             >
               <BrandIcon brand={x.brand} className="text-sm sm:text-base" />
-              {t(x.name)}
+              {x.name}
             </SiteLink>
           );
         })}
       </div>
       <p data-network-says="" aria-live="polite" className="mx-auto mt-3 min-h-12 max-w-sm text-center text-sm leading-6 text-pretty text-muted">
-        {t(says)}
+        {says}
       </p>
     </figure>
   );

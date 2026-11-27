@@ -73,6 +73,6 @@ Limits on a box's width. `max-w-prose` keeps lines readable; `min-w-0` lets a fl
 
 ## Inline and block size
 
-Width and height that follow the writing direction: `inline-*` is the size along a line of text (the width, in English and Khmer), and `block-*` is the size across it.
+Width and height that follow the writing direction: `inline-*` is the size along a line of text (the width, in English), and `block-*` is the size across it.
 
 ::classes inline-4 inline-full block-4 block-full

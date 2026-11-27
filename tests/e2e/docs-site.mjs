@@ -2,7 +2,7 @@
 // Usage: node docs-e2e.mjs <base url> <screenshot dir> <playwright package dir>
 import { chromium } from 'playwright';
 import { mkdirSync } from 'fs';
-import { openExample } from './example-link.js';
+import { cdnPage, openExample } from './example-link.js';
 
 const [base = 'http://localhost:5176', shots = 'shots/docs-site'] = process.argv.slice(2);
 mkdirSync(shots, { recursive: true });
@@ -20,8 +20,8 @@ const errors = [];
 page.on('pageerror', (e) => !/about:srcdoc/.test(e.stack || '') && errors.push('pageerror: ' + e.message));
 // (the browser's "Failed to load resource" line repeats an HTTP error: the response check reports it)
 page.on('console', (m) => m.type() === 'error' && m.location().url !== 'about:srcdoc' && !/^Failed to load resource/.test(m.text()) && errors.push('console: ' + m.text()));
-// a file the site asks for and doesn't have; not the 404 page this suite opens on purpose (/en/nope)
-page.on('response', (r) => r.status() >= 400 && !(r.request().isNavigationRequest() && r.url().endsWith('/en/nope')) && r.frame().url() !== 'about:srcdoc' && errors.push('http ' + r.status() + ': ' + r.url()));
+// a file the site asks for and doesn't have; not the 404 page this suite opens on purpose (/nope)
+page.on('response', (r) => r.status() >= 400 && !(r.request().isNavigationRequest() && r.url().endsWith('/nope')) && r.frame().url() !== 'about:srcdoc' && errors.push('http ' + r.status() + ': ' + r.url()));
 // a request that broke; not one cancelled because the page moved on (Next.js prefetches the links it shows)
 page.on('requestfailed', (r) => !r.url().includes('fonts.g') && r.failure()?.errorText !== 'net::ERR_ABORTED' && r.frame().url() !== 'about:srcdoc' && errors.push('requestfailed: ' + r.url() + ' (' + r.failure()?.errorText + ')'));
 
@@ -53,7 +53,7 @@ async function unstyled() {
 }
 
 const slugs = await (async () => {
-  await page.goto(base + '/en/introduction', { waitUntil: 'networkidle' });
+  await page.goto(base + '/introduction', { waitUntil: 'networkidle' });
   return page.$$eval('aside nav[aria-label="Documentation"] a[href]', (as) => as.map((a) => a.getAttribute('href')));
 })();
 check(slugs.length === 41, 'sidebar lists ' + slugs.length + ' pages');
@@ -71,7 +71,7 @@ for (const href of slugs) {
 check(missingAll.size === 0, 'every class on every page has CSS' + (missingAll.size ? ': ' + [...missingAll].map(([t, h]) => t + ' (' + h + ')').join(', ') : ''));
 
 // computed theme colors: light
-await page.goto(base + '/en/installation', { waitUntil: 'networkidle' });
+await page.goto(base + '/installation', { waitUntil: 'networkidle' });
 const preH = await page.$eval('main pre', (el) => el.getBoundingClientRect().height + '/' + getComputedStyle(el).marginTop);
 check(preH === '56/0px', 'one-line code block is 56px tall with no margin (' + preH + ')');
 const bgLight = await page.evaluate(() => getComputedStyle(document.querySelector('.bg-page')).backgroundColor);
@@ -122,7 +122,7 @@ await page.keyboard.press('ArrowRight');
 await page.waitForTimeout(150);
 check(page.url().endsWith('?tab=react-native') && (await page.evaluate(() => document.activeElement.id)) === 'tab-react-native', 'arrow key moves to the next setup');
 // remembered: visiting /installation again opens React Native
-await page.goto(base + '/en/installation', { waitUntil: 'networkidle' });
+await page.goto(base + '/installation', { waitUntil: 'networkidle' });
 check(!!(await page.$('#rn-babel')), 'the chosen setup is remembered on the next visit');
 await page.screenshot({ path: shots + '/installation-rn-dark.png' });
 // steps are numbered
@@ -144,14 +144,14 @@ await page.click('#tab-react-native');
 await page.waitForTimeout(200);
 
 // TOC scrollspy inside a tab
-await page.goto(base + '/en/installation?tab=nextjs', { waitUntil: 'networkidle' });
+await page.goto(base + '/installation?tab=nextjs', { waitUntil: 'networkidle' });
 await page.evaluate(() => document.getElementById('next-markers').scrollIntoView());
 await page.waitForTimeout(300);
 const activeToc = await page.$eval('nav[aria-label="On this page"] a.text-accent', (a) => a.textContent).catch(() => null);
 check(activeToc === 'Mark where the CSS goes', 'TOC marks the section being read (' + activeToc + ')');
 
 // old URLs redirect to the pages that replaced them, keeping a #section
-for (const [from, to, h1] of [['/en/cdn', '/en/plain-html', 'Plain HTML'], ['/en/tailwind-differences#values-follow-tailwind-css-v43', '/en/coming-from-tailwind#values-follow-tailwind-css-v43', 'Coming from Tailwind CSS']]) {
+for (const [from, to, h1] of [['/cdn', '/plain-html', 'Plain HTML'], ['/tailwind-differences#values-follow-tailwind-css-v43', '/coming-from-tailwind#values-follow-tailwind-css-v43', 'Coming from Tailwind CSS']]) {
   await page.goto(base + from, { waitUntil: 'networkidle' });
   await page.waitForTimeout(150);
   check(page.url().endsWith(to) && (await page.textContent('main h1')) === h1, from + ' redirects to ' + to);
@@ -159,23 +159,24 @@ for (const [from, to, h1] of [['/en/cdn', '/en/plain-html', 'Plain HTML'], ['/en
 // an address from before every page had its language gets the English page (through the 404
 // page, whose 404 status the browser logs as an error: a tab that doesn't count errors)
 {
-  // (a fresh browser: / goes by the language a reader used last, and this one has none yet)
+  // old addresses: the pages were under /en and /km from 2026-11-19 to 2026-11-27 (the 404
+  // page's script drops it; vercel.json redirects them live), and moved pages (REDIRECTS)
   const fresh = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const old = await fresh.newPage();
-  for (const [from, to, h1] of [['/colors', '/en/colors', 'Colors'], ['/installation?tab=html#html-self-host', '/en/installation?tab=html#html-self-host', 'Installation'], ['/cdn', '/en/plain-html', 'Plain HTML'], ['/', '/en', null]]) {
+  for (const [from, to, h1] of [['/en/colors', '/colors', 'Colors'], ['/km/installation?tab=html#html-self-host', '/installation?tab=html#html-self-host', 'Installation'], ['/cdn', '/plain-html', 'Plain HTML'], ['/en', '/', null], ['/en/playground', '/playground', null]]) {
     await old.goto(base + from, { waitUntil: 'networkidle' });
     await old.waitForTimeout(150);
-    check(old.url() === base + to && (h1 === null || (await old.textContent('main h1')) === h1), from + ' (no language) goes to ' + to);
+    check(old.url() === base + to && (h1 === null || (await old.textContent('main h1')) === h1), from + ' (an old address) goes to ' + to);
   }
   await fresh.close();
 }
 // a deep link into another tab opens that tab at the heading
-await page.goto(base + '/en/installation?tab=html#html-self-host', { waitUntil: 'networkidle' });
+await page.goto(base + '/installation?tab=html#html-self-host', { waitUntil: 'networkidle' });
 await page.waitForTimeout(300);
 const dl = await page.$eval('#html-self-host', (el) => Math.round(el.getBoundingClientRect().top));
 check(dl >= 125 && dl <= 145, 'deep link into a tab lands below the sticky tab bar (top ' + dl + ')');
 // search finds a heading inside a tab and opens that tab
-await page.goto(base + '/en/installation?tab=vite', { waitUntil: 'networkidle' });
+await page.goto(base + '/installation?tab=vite', { waitUntil: 'networkidle' });
 await page.keyboard.press('Control+k');
 await page.waitForSelector('[role="dialog"] input');
 await page.keyboard.type('babel plugin');
@@ -183,7 +184,7 @@ await page.waitForTimeout(100);
 await page.keyboard.press('Enter');
 await page.waitForTimeout(500);
 check(page.url().includes('tab=react-native') && !!(await page.$('#rn-babel')), 'search result inside a tab opens that tab (' + page.url().replace(base, '') + ')');
-await page.goto(base + '/en/installation', { waitUntil: 'networkidle' });
+await page.goto(base + '/installation', { waitUntil: 'networkidle' });
 
 // search: Ctrl+K, type, Enter
 await page.keyboard.press('Control+k');
@@ -199,7 +200,7 @@ check(!(await page.$('[role="dialog"]')) && page.url().includes('safelist'), 'En
 
 // client-side navigation via sidebar keeps the SPA (no full reload)
 await page.evaluate(() => (window.__spa = 1));
-await page.click('aside a[href="/en/variants"]');
+await page.click('aside a[href="/variants"]');
 await page.waitForTimeout(200);
 check((await page.evaluate(() => window.__spa)) === 1 && page.url().endsWith('/variants'), 'sidebar navigates without a reload');
 check((await page.textContent('main h1')) === 'Variants', 'variants page rendered');
@@ -217,7 +218,7 @@ const chrome = await page.evaluate(() => ({
   search: getComputedStyle(document.querySelector('header button[aria-label="Search"]')).display,
 }));
 check(chrome.menu === 'none' && chrome.search === 'none', 'mobile-only header buttons stay hidden on desktop after the engine loads (' + JSON.stringify(chrome) + ')');
-const surface = await page.goto(base + '/en/theme-colors', { waitUntil: 'networkidle' }).then(() =>
+const surface = await page.goto(base + '/theme-colors', { waitUntil: 'networkidle' }).then(() =>
   page.waitForFunction(() => {
     const el = document.querySelector('main .bg-surface');
     return el && getComputedStyle(el).backgroundColor;
@@ -244,21 +245,21 @@ check(!(await canvasBox.isVisible()) && (await ex.locator('pre').textContent()).
 await ex.locator('[role="tab"]:has-text("Preview")').click();
 
 // utility reference: tables are made by the engine, with Kbach's default theme
-await page.goto(base + '/en/spacing', { waitUntil: 'networkidle' });
+await page.goto(base + '/spacing', { waitUntil: 'networkidle' });
 await page.waitForFunction(() => [...document.querySelectorAll('main td')].some((t) => t.textContent === 'p-4'), null, { timeout: 15000 });
 const p4 = await page.evaluate(() => [...document.querySelectorAll('main td')].find((t) => t.textContent === 'p-4').nextElementSibling.textContent);
 check(p4 === 'padding: 16px;', 'the reference table gives p-4 its real CSS (' + p4 + ')');
-await page.goto(base + '/en/effects', { waitUntil: 'networkidle' });
+await page.goto(base + '/effects', { waitUntil: 'networkidle' });
 await page.waitForFunction(() => [...document.querySelectorAll('main td')].some((t) => t.textContent === 'shadow-lg'), null, { timeout: 15000 });
 const lg = await page.evaluate(() => [...document.querySelectorAll('main td')].find((t) => t.textContent === 'shadow-lg').nextElementSibling.textContent);
 check(lg === 'box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);', 'composed utilities show their effective CSS (' + lg + ')');
-await page.goto(base + '/en/typography', { waitUntil: 'networkidle' });
+await page.goto(base + '/typography', { waitUntil: 'networkidle' });
 await page.waitForFunction(() => [...document.querySelectorAll('main td')].some((t) => t.textContent === 'font-sans'), null, { timeout: 15000 });
 const sans = await page.evaluate(() => [...document.querySelectorAll('main td')].find((t) => t.textContent === 'font-sans').nextElementSibling.textContent);
 check(sans.startsWith('font-family: ui-sans-serif'), 'tables use the default theme, not this site\'s fonts (' + sans.slice(0, 40) + '…)');
 
 // playground: HTML + a script on a sandboxed canvas (an opaque origin: the page reaches it only through Playwright's frame API)
-await page.goto(base + '/en/playground', { waitUntil: 'networkidle' });
+await page.goto(base + '/playground', { waitUntil: 'networkidle' });
 const canvasFrame = () => page.frames().find((f) => f !== page.mainFrame() && f.url() === 'about:srcdoc');
 const canvasEval = async (fn, arg) => {
   for (let i = 0; i < 50; i++) {
@@ -341,14 +342,20 @@ check(card.cls.includes('bg-rose-9') && card.bg !== 'rgba(0, 0, 0, 0)', 'a class
 await page.click('button[role="tab"]:has-text("script")');
 await page.fill('.cm-editor:visible .cm-content', '');
 await page.click('button[role="tab"]:has-text("index.html")');
-await page.fill('.cm-editor:visible .cm-content', '<div id="t" class="p-6 rounded-xl bg-blue-500 text-white">hi</div><img src="x" onerror="try { parent.__pwned = 1 } catch {}">');
+// (a whole page, as HTML mode has one: kbach.config.js, then Kbach's CDN script, which styles #t)
+await page.fill('.cm-editor:visible .cm-content', cdnPage('<div id="t" class="p-6 rounded-xl bg-blue-500 text-white">hi</div><img src="x" onerror="try { parent.__pwned = 1 } catch {}">'));
 await page.waitForTimeout(800);
 const fix = page.locator('section[aria-label="Code"] button:has-text("Fix 1 class")');
 check((await fix.count()) === 1, 'unknown bg-blue-500: the editor status bar offers Fix 1 class');
 await fix.click();
 await page.waitForTimeout(800);
 const fixed = await page.$$eval('.cm-editor:visible .cm-line', (ls) => ls.map((l) => l.textContent).join('\n'));
-const bg = await canvasEval(() => getComputedStyle(document.getElementById('t')).backgroundColor);
+// (the CDN script styles the new class a moment after the page changes)
+let bg = '';
+for (let i = 0; i < 40 && bg !== 'rgb(59, 130, 246)'; i++) {
+  bg = await canvasEval(() => getComputedStyle(document.getElementById('t')).backgroundColor);
+  if (bg !== 'rgb(59, 130, 246)') await page.waitForTimeout(100);
+}
 check(fixed.includes('bg-blue-6 ') && bg === 'rgb(59, 130, 246)', 'one click applies the fix (' + bg + ')');
 
 // a script runs, logs to the Console tab, and still can't reach the docs page
@@ -388,7 +395,8 @@ await page.click('[role="tablist"][aria-label="Files"] [role="tab"]:has-text("in
 await page.click('button:has-text("Preview")');
 
 // share link restores the HTML and the script
-await page.click('button:has-text("Share")');
+// (Share goes to the new link: the page loads again from it)
+await Promise.all([page.waitForEvent('load'), page.click('button:has-text("Share")')]);
 const link = await page.evaluate(() => navigator.clipboard.readText());
 check(link.includes('/playground#code=') && link.includes('&js=') && link.includes('&lang=ts'), 'Share copies a link with the code and the script');
 await page.evaluate(() => localStorage.clear());
@@ -401,7 +409,7 @@ check(restored.includes('id="t"') && restored.includes('bg-blue-6') && !!restore
 await page.screenshot({ path: shots + '/playground-dark.png', fullPage: false });
 
 // sidebar: fold a section, and the active link stays in view after Next
-await page.goto(base + '/en/troubleshooting', { waitUntil: 'networkidle' });
+await page.goto(base + '/troubleshooting', { waitUntil: 'networkidle' });
 const sideLink = async () => page.$eval('aside nav[aria-label="Documentation"] a[aria-current="page"]', (a) => {
   let box = a.parentElement;
   while (box && !/(auto|scroll)/.test(getComputedStyle(box).overflowY)) box = box.parentElement;
@@ -410,7 +418,7 @@ const sideLink = async () => page.$eval('aside nav[aria-label="Documentation"] a
   return r.top >= b.top && r.bottom <= b.bottom;
 });
 await page.setViewportSize({ width: 1440, height: 520 });
-await page.goto(base + '/en/introduction', { waitUntil: 'networkidle' });
+await page.goto(base + '/introduction', { waitUntil: 'networkidle' });
 for (let k = 0; k < 6; k++) {
   await page.click('nav[aria-label="Previous and next page"] a:has-text("Next")');
   await page.waitForTimeout(250);
@@ -426,14 +434,14 @@ check(folded === 'false' && stillFolded === 'false', 'a sidebar section folds, a
 await page.locator('aside nav[aria-label="Documentation"] button[aria-expanded]').nth(3).click();
 
 // tables: code stays on one line; scrollbars use the theme
-await page.goto(base + '/en/react-api', { waitUntil: 'networkidle' });
+await page.goto(base + '/react-api', { waitUntil: 'networkidle' });
 const ws = await page.$eval('main table code', (c) => getComputedStyle(c).whiteSpace);
 check(ws === 'nowrap', 'code in a table does not wrap (' + ws + ')');
 const sc = await page.evaluate(() => getComputedStyle(document.body).scrollbarColor);
 check(/rgb/.test(sc), 'scrollbars use the theme colors (' + sc + ')');
 
 // colors page: palette swatches + copy
-await page.goto(base + '/en/colors', { waitUntil: 'networkidle' });
+await page.goto(base + '/colors', { waitUntil: 'networkidle' });
 const swatches = await page.$$('button[aria-label^="Copy bg-"]');
 check(swatches.length === 26 * 12, 'palette has 312 swatches (' + swatches.length + ')');
 await swatches[5].click();
@@ -461,13 +469,13 @@ await page.screenshot({ path: shots + '/colors-dark.png' });
 
 // light screenshots of intro
 await page.click('[role="radio"][aria-label="Light"]');
-await page.goto(base + '/en', { waitUntil: 'networkidle' });
+await page.goto(base + '/', { waitUntil: 'networkidle' });
 await page.waitForTimeout(300);
 await page.screenshot({ path: shots + '/intro-light.png' });
 await page.screenshot({ path: shots + '/intro-light-full.png', fullPage: true });
 
 // deep link with hash
-await page.goto(base + '/en/dark-mode#avoid-a-flash-on-load', { waitUntil: 'networkidle' });
+await page.goto(base + '/dark-mode#avoid-a-flash-on-load', { waitUntil: 'networkidle' });
 await page.waitForTimeout(300);
 const top = await page.$eval('#avoid-a-flash-on-load', (el) => el.getBoundingClientRect().top);
 check(Math.round(top) === 72, 'deep link puts the h2 divider just under the 64px header (top ' + Math.round(top) + ')');
@@ -483,14 +491,14 @@ for (const id of ['the-kbach-object', 'add-a-toggle', 'a-default-mode', 'react-n
 }
 
 // 404
-await page.goto(base + '/en/nope', { waitUntil: 'networkidle' });
+await page.goto(base + '/nope', { waitUntil: 'networkidle' });
 check((await page.textContent('main h1')) === 'Page not found', '404 page');
 
 // mobile
 const m = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark', isMobile: true, hasTouch: true });
 const mp = await m.newPage();
 mp.on('pageerror', (e) => errors.push('mobile pageerror: ' + e.message));
-await mp.goto(base + '/en/variants', { waitUntil: 'networkidle' });
+await mp.goto(base + '/variants', { waitUntil: 'networkidle' });
 const overflow = await mp.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 check(overflow <= 0, 'no horizontal page scroll on mobile (' + overflow + 'px)');
 check(await mp.evaluate(() => document.documentElement.classList.contains('dark')), 'system dark mode followed on first visit');
@@ -498,7 +506,7 @@ await mp.screenshot({ path: shots + '/mobile-variants.png' });
 await mp.click('button[aria-label="Open navigation"]');
 await mp.waitForTimeout(400);
 await mp.screenshot({ path: shots + '/mobile-menu.png' });
-await mp.click('[aria-hidden="false"] a[href="/en/colors"]');
+await mp.click('[aria-hidden="false"] a[href="/colors"]');
 await mp.waitForTimeout(400);
 check(mp.url().endsWith('/colors') && (await mp.evaluate(() => document.body.style.overflow)) === '', 'mobile menu navigates and closes');
 

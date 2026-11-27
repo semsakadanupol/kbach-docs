@@ -136,6 +136,17 @@ export function addClassInSource(src: string, el: SourceElement, cls: string): s
   return src.slice(0, at) + ' class="' + cls + '"' + src.slice(at);
 }
 
+/**
+ * The source with `remove` taken out of the element's class attribute and `add` put in, in one
+ * edit (the Design tab replaces a class this way: two edits in a row would use stale offsets).
+ */
+export function setClassesInSource(src: string, el: SourceElement, remove: string[], add: string[]): string {
+  if (el.classFrom === null || el.classTo === null) return add.length ? addClassInSource(src, el, add.join(' ')) : src;
+  const tokens = src.slice(el.classFrom, el.classTo).split(/\s+/).filter((c) => c && !remove.includes(c));
+  for (const a of add) if (!tokens.includes(a)) tokens.push(a);
+  return src.slice(0, el.classFrom) + tokens.join(' ') + src.slice(el.classTo);
+}
+
 /** The source with `cls` taken out of the element's class attribute. */
 export function removeClassInSource(src: string, el: SourceElement, cls: string): string {
   if (el.classFrom === null || el.classTo === null) return src;

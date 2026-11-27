@@ -6,7 +6,7 @@ const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
   if (!ok) failures++;
 };
-const URL = 'http://localhost:5176/en/playground';
+const URL = 'http://localhost:5176/playground';
 const b = await chromium.launch();
 
 /** The placeholder's panes, then the real ones, for a window size and saved layout. */
@@ -41,27 +41,33 @@ async function compare(viewport, saved) {
       const b = e.getBoundingClientRect();
       return { x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height) };
     };
-    const panes = [...body.children].filter((e) => e.tagName === 'DIV');
-    return { header: r(header), code: r(panes[0]), output: r(panes[1]), status: getComputedStyle(panes[0].lastElementChild).backgroundColor, lines: [...panes[0].children[1].children].map((l) => Math.round(l.lastElementChild.getBoundingClientRect().width)) };
+    const code = root.querySelector('[data-pane="code"]');
+    const bar = root.querySelector('[data-pane="phone-bar"]');
+    return { header: r(header), code: r(code), output: r(root.querySelector('[data-pane="output"]')), bar: bar && r(bar), status: getComputedStyle(code.lastElementChild).backgroundColor, lines: [...code.children[1].children].map((l) => Math.round(l.lastElementChild.getBoundingClientRect().width)) };
   });
   release();
   await p.waitForSelector('section[aria-label="Code"]', { timeout: 15000 });
   await p.waitForTimeout(800);
   const [code] = await boxes('section[aria-label="Code"]');
   const [output] = await boxes('section[aria-label="Output"]');
+  const [bar] = await boxes('nav[aria-label="Playground view"]');
   await ctx.close();
-  return { loading, code, output };
+  return { loading, code, output, bar };
 }
 const near = (a, b, px = 1) => Math.abs(a.x - b.x) <= px && Math.abs(a.y - b.y) <= px && Math.abs(a.w - b.w) <= px && Math.abs(a.h - b.h) <= px;
 
 for (const [name, viewport, saved] of [
   ['wide, the default (code left)', { width: 1440, height: 900 }, {}],
   ['wide, code right at 60%', { width: 1440, height: 900 }, { 'kbach-playground-panes': 'right', 'kbach-playground-split': '60' }],
-  ['phone (stacked)', { width: 390, height: 844 }, {}],
+  ['narrow (stacked)', { width: 720, height: 900 }, {}],
+  ['phone (the preview alone, the Code / Preview bar under it)', { width: 390, height: 844 }, {}],
 ]) {
   const r = await compare(viewport, saved);
+  // a phone opens on the preview: no editor in either, and the bar where the real one lands
+  const phone = viewport.width < 640;
+  const hiddenBox = { x: 0, y: 0, w: 0, h: 0 };
   check(
-    near(r.loading.code, r.code) && near(r.loading.output, r.output),
+    (phone ? near(r.loading.code, hiddenBox) && near(r.code, hiddenBox) && r.loading.bar && r.bar && Math.abs(r.loading.bar.y + 8 - r.bar.y) <= 1 && Math.abs(r.loading.bar.h - 8 - r.bar.h) <= 1 : near(r.loading.code, r.code)) && near(r.loading.output, r.output),
     name + ': the placeholder’s editor and preview sit where the real ones land ' + JSON.stringify(r),
   );
 }

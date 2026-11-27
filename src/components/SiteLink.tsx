@@ -2,15 +2,14 @@
 
 import Link from 'next/link';
 import type { ComponentProps } from 'react';
-import { useHref } from '../lib/i18n';
 
 /**
- * A link to a page of this site, written the English way (/installation):
- * on a Khmer page it goes to the Khmer one (/km/installation). Next.js opens
- * it without reloading the page. `exact` takes the address as written (the
- * language switch). Use a plain <a> for other sites and for #sections.
+ * A link to a page of this site (/installation). Next.js opens it without
+ * reloading the page. Use a plain <a> for other sites and for #sections.
+ *
+ * The playground opens in the same tab, like every other page (2026-11-27, the
+ * user's choice; from 2026-11-26 it opened a new tab). Its logo button goes back.
  */
-export function SiteLink({ href, exact = false, ...props }: Omit<ComponentProps<typeof Link>, 'href'> & { href: string; exact?: boolean }) {
-  const toLocal = useHref();
-  return <Link href={exact ? href : toLocal(href)} {...props} />;
+export function SiteLink({ href, ...props }: Omit<ComponentProps<typeof Link>, 'href'> & { href: string }) {
+  return <Link href={href} {...props} />;
 }

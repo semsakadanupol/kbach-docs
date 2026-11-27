@@ -1,5 +1,6 @@
 // The editor's own scrollbars (VS Code style, with marks) and tooltips that never overflow.
 import { chromium } from 'playwright';
+import { cdnPage } from './example-link.js';
 let failures = 0;
 const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
@@ -9,7 +10,7 @@ const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 1440, height: 1000 } });
 const errors = [];
 p.on('pageerror', (e) => !/about:srcdoc/.test(e.stack || '') && errors.push(e.message));
-await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
 await p.evaluate(() => { localStorage.clear(); localStorage.setItem('kbach-playground-panes', 'left'); });
 await p.reload({ waitUntil: 'networkidle' });
 await p.waitForTimeout(1200);
@@ -94,7 +95,9 @@ await p.waitForTimeout(400);
 check((await bars()).h === 'none', 'with wrap on there is nothing to scroll sideways, and no bar');
 await p.click('button[aria-label="Wrap long lines"]');
 
-// run errors show on the script's ruler
+// run errors show on the script's ruler (the page loads its script, as a real one has to: cdnPage's tag)
+await tab('index.html').click();
+await p.fill(ed + ' .cm-content', cdnPage('<p>x</p>'));
 await tab('script').click();
 // (distinct names: the script must be valid apart from the one error on line 31)
 await p.fill(ed + ' .cm-content', Array.from({ length: 30 }, (_, i) => 'const a' + i + ' = ' + i + ';').join('\n') + '\nbroken();\n' + Array.from({ length: 20 }, (_, i) => 'const z' + i + ' = ' + i + ';').join('\n'));

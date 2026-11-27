@@ -43,6 +43,16 @@ export const CloseIcon = (p: P) => (
     <path d="M6 6l12 12M18 6 6 18" />
   </Icon>
 );
+export const ReloadIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.5M20 4v4.5h-4.5" />
+  </Icon>
+);
+export const PlusIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);
 export const CopyIcon = (p: P) => (
   <Icon {...p}>
     <rect x="9" y="9" width="11" height="11" rx="2" />
@@ -62,6 +72,11 @@ export const ArrowLeftIcon = (p: P) => (
 export const ArrowRightIcon = (p: P) => (
   <Icon {...p}>
     <path d="M5 12h14M13 6l6 6-6 6" />
+  </Icon>
+);
+export const ArrowUpIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M12 19V5M6 11l6-6 6 6" />
   </Icon>
 );
 export const ChevronRightIcon = (p: P) => (

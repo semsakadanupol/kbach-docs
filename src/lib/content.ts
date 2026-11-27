@@ -3,7 +3,6 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { parsePage } from '../markdown/parse';
 import { NAV, REDIRECTS, hrefFor, type DocPage, type PageInfo } from './docs';
-import type { Locale } from './locale';
 
 // Reads content/ at build time (Node only: server components, route
 // handlers). Components in the browser get what they need from here
@@ -17,7 +16,7 @@ const slugsIn = (dir: string) => (existsSync(dir) ? readdirSync(dir).filter((f) 
 // When each page last changed, for the "Last updated" line under it: the
 // date of the last commit that touched its file (one git call for all of
 // them), else, for a file not committed yet, when it was last saved.
-// Keyed like "installation" and "km/installation".
+// Keyed by slug ("installation").
 let dates: Record<string, string> | null = null;
 function pageDates(): Record<string, string> {
   if (dates) return dates;
@@ -30,7 +29,7 @@ function pageDates(): Record<string, string> {
     let date = '';
     for (const line of log.split('\n')) {
       if (line.startsWith('@')) date = line.slice(1).trim();
-      else if (line.endsWith('.md')) {
+      else if (line.endsWith('.md') && !line.includes('/')) {
         const key = line.trim().slice(0, -3);
         if (!(key in dates)) dates[key] = date;
       }
@@ -38,47 +37,32 @@ function pageDates(): Record<string, string> {
   } catch {
     // not a git checkout: modified times only
   }
-  for (const sub of ['', 'km/']) {
-    for (const slug of slugsIn(join(CONTENT, sub))) {
-      if (!(sub + slug in dates)) dates[sub + slug] = statSync(join(CONTENT, sub, slug + '.md')).mtime.toISOString();
-    }
+  for (const slug of slugsIn(CONTENT)) {
+    if (!(slug in dates)) dates[slug] = statSync(join(CONTENT, slug + '.md')).mtime.toISOString();
   }
   return dates;
 }
 
 const cache = new Map<string, DocPage | null>();
 
-function load(slug: string, locale: Locale): DocPage | null {
-  const key = locale + '/' + slug;
-  if (cache.has(key)) return cache.get(key)!;
-  const sub = locale === 'km' ? 'km/' : '';
-  const file = join(CONTENT, sub, slug + '.md');
+/** A page from content/, or undefined when there's no such file. */
+export function getPage(slug: string): DocPage | undefined {
+  if (cache.has(slug)) return cache.get(slug) ?? undefined;
+  const file = join(CONTENT, slug + '.md');
   let page: DocPage | null = null;
   if (/^[\w-]+$/.test(slug) && existsSync(file)) {
     const parsed = parsePage(read(file));
     page = {
       ...parsed,
       slug,
-      locale,
       section: NAV.find((s) => s.pages.includes(slug))?.title ?? '',
       title: parsed.meta.title ?? slug,
       description: parsed.meta.description ?? '',
-      updated: pageDates()[sub + slug],
+      updated: pageDates()[slug],
     };
   }
-  cache.set(key, page);
-  return page;
-}
-
-/** A page in a language: its Khmer text, else the English one marked as a fallback. */
-export function getPage(slug: string, locale: Locale): DocPage | undefined {
-  if (locale === 'km') {
-    const km = load(slug, 'km');
-    if (km) return km;
-    const en = load(slug, 'en');
-    return en ? { ...en, fallback: true } : undefined;
-  }
-  return load(slug, 'en') ?? undefined;
+  cache.set(slug, page);
+  return page ?? undefined;
 }
 
 /** Every page in content/ (the docs, and playground.md). */
@@ -86,16 +70,16 @@ export function allSlugs(): string[] {
   return slugsIn(CONTENT);
 }
 
-/** The docs' pages in sidebar order, in a language (English where a page isn't translated yet). */
-export function pagesIn(locale: Locale): DocPage[] {
+/** The docs' pages in sidebar order. */
+export function docPages(): DocPage[] {
   return NAV.flatMap((s) => s.pages)
-    .map((slug) => getPage(slug, locale))
+    .map((slug) => getPage(slug))
     .filter((p): p is DocPage => !!p);
 }
 
 /** Every page's name, for the sidebar, the pager and the home page (small enough to send to the browser). */
-export function pageInfos(locale: Locale): PageInfo[] {
-  return pagesIn(locale).map((p) => ({ slug: p.slug, title: p.title, nav: p.meta.nav ?? p.title, section: p.section }));
+export function pageInfos(): PageInfo[] {
+  return docPages().map((p) => ({ slug: p.slug, title: p.title, nav: p.meta.nav ?? p.title, section: p.section }));
 }
 
 /** The pages a moved page's old address can go to. */
@@ -106,7 +90,7 @@ export function redirectSlugs(): string[] {
 export interface SearchEntry {
   href: string;
   title: string;
-  /** English section title (the browser translates it), or the page's title for a heading */
+  /** the page's section title, or the page's title for a heading */
   section: string;
   kind: 'page' | 'heading';
   haystack: string;
@@ -114,23 +98,22 @@ export interface SearchEntry {
 }
 
 /**
- * What the search box looks through, in a language: one entry per page, per
- * tab and per heading. A heading inside a tab links with ?tab=, so the right
- * tab opens. In Khmer a page's English title is searchable too (people type
- * the English term). Served as /search.json and /km/search.json.
+ * What the search box looks through: one entry per page, per tab and per
+ * heading. A heading inside a tab links with ?tab=, so the right tab opens.
+ * Served as /search.json.
  */
-export function searchEntries(locale: Locale): SearchEntry[] {
-  return pagesIn(locale).flatMap((p) => [
+export function searchEntries(): SearchEntry[] {
+  return docPages().flatMap((p) => [
     {
-      href: hrefFor(p.slug, locale),
+      href: hrefFor(p.slug),
       title: p.title,
       section: p.section,
       kind: 'page' as const,
-      haystack: (p.title + ' ' + p.description + (locale === 'km' ? ' ' + (getPage(p.slug, 'en')?.title ?? '') : '')).toLowerCase(),
+      haystack: (p.title + ' ' + p.description).toLowerCase(),
       text: p.text,
     },
     ...p.tabs.map((t) => ({
-      href: hrefFor(p.slug, locale) + '?tab=' + t.id,
+      href: hrefFor(p.slug) + '?tab=' + t.id,
       title: p.title + ': ' + t.label,
       section: p.section,
       kind: 'page' as const,
@@ -138,7 +121,7 @@ export function searchEntries(locale: Locale): SearchEntry[] {
       text: '',
     })),
     ...p.headings.map((h) => ({
-      href: hrefFor(p.slug, locale) + (h.tab ? '?tab=' + h.tab : '') + '#' + h.id,
+      href: hrefFor(p.slug) + (h.tab ? '?tab=' + h.tab : '') + '#' + h.id,
       title: h.text,
       section: h.tabLabel ? p.title + ' · ' + h.tabLabel : p.title,
       kind: 'heading' as const,
@@ -152,10 +135,10 @@ export function searchEntries(locale: Locale): SearchEntry[] {
 
 /**
  * The site's address, for the tags and files that need a full URL
- * (canonical, the language alternates, og:url, sitemap.xml, llms.txt).
+ * (canonical, og:url, sitemap.xml, llms.txt).
  * Set it when deploying:  KBACH_DOCS_URL=https://docs.example.com npm run build
- * Without it the pages still get their share tags, but no canonical,
- * alternates or sitemap entries, and llms.txt links are relative.
+ * Without it the pages still get their share tags, but no canonical or
+ * sitemap entries, and llms.txt links are relative.
  */
 export const SITE = (process.env.KBACH_DOCS_URL ?? '').replace(/\/+$/, '');
 
@@ -173,8 +156,8 @@ export function llmsTxt(): string {
   for (const section of NAV) {
     lines.push('## ' + section.title, '');
     for (const slug of section.pages) {
-      const p = getPage(slug, 'en');
-      if (p) lines.push('- [' + p.title + '](' + SITE + '/en/' + slug + '): ' + p.description);
+      const p = getPage(slug);
+      if (p) lines.push('- [' + p.title + '](' + SITE + hrefFor(slug) + '): ' + p.description);
     }
     lines.push('');
   }
@@ -182,12 +165,12 @@ export function llmsTxt(): string {
   return lines.join('\n');
 }
 
-/** llms-full.txt: the rules, then the whole English documentation as plain Markdown. */
+/** llms-full.txt: the rules, then the whole documentation as plain Markdown. */
 export function llmsFullTxt(): string {
   const full = ['# Kbach documentation', '', '## Rules', '', aiRules(), ''];
   for (const section of NAV) {
     for (const slug of section.pages) {
-      const p = getPage(slug, 'en');
+      const p = getPage(slug);
       if (!p) continue;
       const body = read(join(CONTENT, slug + '.md'))
         .replace(/^---\n[\s\S]*?\n---\n/, '')
@@ -198,7 +181,7 @@ export function llmsFullTxt(): string {
         .replace(/\s\{#[\w-]+\}$/gm, '')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
-      full.push('---', '', '# ' + p.title, '', 'Source: ' + SITE + '/en/' + slug, '', p.description, '', body, '');
+      full.push('---', '', '# ' + p.title, '', 'Source: ' + SITE + hrefFor(slug), '', p.description, '', body, '');
     }
   }
   return full.join('\n');

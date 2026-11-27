@@ -11,13 +11,21 @@ export interface Compiled {
   error?: { message: string; line: number | null };
 }
 
-/** TypeScript → JavaScript, line numbers unchanged, then loop guards. */
-export async function compileScript(source: string, lang: ScriptLang, opts: { guard?: boolean } = {}): Promise<Compiled> {
+/**
+ * TypeScript → JavaScript, and JSX → JavaScript in React mode (react.ts; the automatic
+ * runtime, imports from react/jsx-runtime), line numbers unchanged, then loop guards.
+ */
+export async function compileScript(source: string, lang: ScriptLang, opts: { guard?: boolean; jsx?: boolean } = {}): Promise<Compiled> {
   let js = source;
-  if (lang === 'ts') {
+  if (lang === 'ts' || opts.jsx) {
     try {
       const { transform } = await import('sucrase');
-      js = transform(source, { transforms: ['typescript'], disableESTransforms: true }).code;
+      js = transform(source, {
+        transforms: opts.jsx ? (lang === 'ts' ? ['jsx', 'typescript'] : ['jsx']) : ['typescript'],
+        jsxRuntime: 'automatic',
+        production: true,
+        disableESTransforms: true,
+      }).code;
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       const at = /\((\d+):\d+\)/.exec(message);

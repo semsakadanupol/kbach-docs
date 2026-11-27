@@ -29,13 +29,13 @@ export async function formatCode(code: string, mode: EditorMode): Promise<Format
   const [{ format }, ...plugins] = await Promise.all(
     mode === 'html'
       ? [import('prettier/standalone'), import('prettier/plugins/html')]
-      : mode === 'ts'
+      : mode === 'ts' || mode === 'tsx'
         ? [import('prettier/standalone'), import('prettier/plugins/typescript'), import('prettier/plugins/estree')]
         : [import('prettier/standalone'), import('prettier/plugins/babel'), import('prettier/plugins/estree')],
   );
   const source = mode === 'html' ? sortClasses(code) : code;
   const out = await format(source, {
-    parser: mode === 'html' ? 'html' : mode === 'ts' ? 'typescript' : 'babel',
+    parser: mode === 'html' ? 'html' : mode === 'ts' || mode === 'tsx' ? 'typescript' : 'babel',
     plugins: plugins.map((p) => (('default' in p ? p.default : p) as object)),
     printWidth: 100,
     tabWidth: 2,

@@ -1,5 +1,5 @@
 // The API pages against the published packages: every name a package exports
-// is on its API page (in both languages), and every subpath export too. A
+// is on its API page, and every subpath export too. A
 // release with a new export fails here until the page names it. (No browser.)
 //
 // @kbach/react is a dependency, so it's read from node_modules (the version in
@@ -59,15 +59,10 @@ for (const [pkg, page] of [
     .filter((k) => k !== '.' && k !== './package.json')
     .map((k) => '@kbach/' + pkg + k.slice(1));
   check(names.length > 10, '@kbach/' + pkg + ': ' + names.length + ' exports found');
-  for (const [lang, file] of [
-    ['en', 'content/' + page + '.md'],
-    ['km', 'content/km/' + page + '.md'],
-  ]) {
-    const md = read(file);
-    const missing = names.filter((n) => !new RegExp('\\b' + n + '\\b').test(md));
-    check(missing.length === 0, '/' + (lang === 'km' ? 'km/' : '') + page + ' names every export of @kbach/' + pkg + (missing.length ? ' (missing: ' + missing.join(', ') + ')' : ''));
-    const missingSub = subpaths.filter((s) => !md.includes(s));
-    check(missingSub.length === 0, '/' + (lang === 'km' ? 'km/' : '') + page + ' names its subpath exports' + (missingSub.length ? ' (missing: ' + missingSub.join(', ') + ')' : ''));
-  }
+  const md = read('content/' + page + '.md');
+  const missing = names.filter((n) => !new RegExp('\\b' + n + '\\b').test(md));
+  check(missing.length === 0, '/' + page + ' names every export of @kbach/' + pkg + (missing.length ? ' (missing: ' + missing.join(', ') + ')' : ''));
+  const missingSub = subpaths.filter((s) => !md.includes(s));
+  check(missingSub.length === 0, '/' + page + ' names its subpath exports' + (missingSub.length ? ' (missing: ' + missingSub.join(', ') + ')' : ''));
 }
 process.exit(failures ? 1 : 0);

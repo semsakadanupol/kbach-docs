@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing: monthly or yearly, three plans</title>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <!-- the middle plan is ink on surface turned around (bg-ink text-surface): dark on a light
+         page, light on a dark one, from the same two classes -->
+    <main class="mx-auto max-w-5xl py-10 sm:py-16">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="text-sm font-semibold text-accent">Pricing</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight text-balance sm:text-5xl">
+          Plans that grow with your team
+        </h1>
+        <p class="mt-4 text-pretty text-muted sm:text-lg">
+          Start free, upgrade when you need more. Every plan has the whole editor.
+        </p>
+
+        <!-- monthly or yearly: the white pill slides under the one picked -->
+        <div class="mt-8 inline-flex items-center gap-3">
+          <div
+            role="group"
+            aria-label="Billing"
+            class="relative grid grid-cols-2 rounded-full bg-well p-1 text-sm font-semibold"
+          >
+            <span
+              id="pill"
+              class="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-card shadow-sm ring-1 ring-line transition-transform duration-300 ease-out"
+            ></span>
+            <button
+              data-billing="monthly"
+              aria-pressed="true"
+              class="relative rounded-full px-5 py-2 transition-colors"
+            >
+              Monthly
+            </button>
+            <button
+              data-billing="yearly"
+              aria-pressed="false"
+              class="relative rounded-full px-5 py-2 text-muted transition-colors"
+            >
+              Yearly
+            </button>
+          </div>
+          <span
+            class="rounded-full bg-emerald-6/10 px-2.5 py-1 text-xs font-semibold text-emerald-7 dark:text-emerald-4"
+          >
+            2 months free
+          </span>
+        </div>
+      </div>
+
+      <!-- one column on a phone, three from md; the middle one stands out -->
+      <div class="mt-12 grid items-start gap-6 md:grid-cols-3 md:gap-4 lg:gap-6">
+        <div class="flex h-full flex-col rounded-3xl border border-line bg-card p-6 lg:p-8">
+          <h2 class="font-semibold">Starter</h2>
+          <p class="mt-1 line-clamp-2 min-h-10 text-sm text-muted">
+            For trying things out and side projects.
+          </p>
+          <p class="mt-6 flex items-baseline gap-1">
+            <span class="text-4xl font-bold tracking-tight tabular-nums">$0</span>
+            <span class="text-sm text-muted">/ month</span>
+          </p>
+          <p class="mt-1 h-5 text-xs text-muted">Free forever</p>
+          <a
+            href="#"
+            class="mt-6 rounded-xl border border-line py-2.5 text-center text-sm font-semibold transition hover:bg-well active:scale-[0.98]"
+            >Start for free</a
+          >
+          <ul class="mt-8 space-y-3 text-sm">
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >3 projects
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >1 GB of storage
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Community support
+            </li>
+            <li class="flex gap-3 text-muted">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-current stroke-2 opacity-60"
+                stroke-linecap="round"
+              >
+                <path d="M18 6 6 18M6 6l12 12" /></svg
+              >Custom domains
+            </li>
+            <li class="flex gap-3 text-muted">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-current stroke-2 opacity-60"
+                stroke-linecap="round"
+              >
+                <path d="M18 6 6 18M6 6l12 12" /></svg
+              >Team roles
+            </li>
+          </ul>
+        </div>
+
+        <div
+          class="relative flex h-full flex-col rounded-3xl bg-ink p-6 text-surface shadow-2xl shadow-brand/20 ring-2 ring-brand md:-my-4 md:py-10 lg:p-8 lg:py-12"
+        >
+          <span
+            class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-semibold whitespace-nowrap text-white shadow-lg shadow-brand/30"
+          >
+            Most popular
+          </span>
+          <h2 class="font-semibold">Pro</h2>
+          <p class="mt-1 line-clamp-2 min-h-10 text-sm text-surface/70">
+            For people who ship every week and want it to be quick.
+          </p>
+          <p class="mt-6 flex items-baseline gap-1">
+            <span
+              data-monthly="19"
+              data-yearly="15"
+              class="text-4xl font-bold tracking-tight tabular-nums"
+              >$19</span
+            >
+            <span class="text-sm text-surface/70">/ month</span>
+          </p>
+          <p data-note="Billed $180 a year" class="mt-1 h-5 text-xs text-surface/70"></p>
+          <a
+            href="#"
+            class="mt-6 rounded-xl bg-brand py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand/90 active:scale-[0.98]"
+            >Get Pro</a
+          >
+          <ul class="mt-8 space-y-3 text-sm">
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-brand stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Unlimited projects
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-brand stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >100 GB of storage
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-brand stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Email support in a day
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-brand stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Custom domains
+            </li>
+            <li class="flex gap-3 text-surface/60">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-current stroke-2"
+                stroke-linecap="round"
+              >
+                <path d="M18 6 6 18M6 6l12 12" /></svg
+              >Team roles
+            </li>
+          </ul>
+        </div>
+
+        <div class="flex h-full flex-col rounded-3xl border border-line bg-card p-6 lg:p-8">
+          <h2 class="font-semibold">Team</h2>
+          <p class="mt-1 line-clamp-2 min-h-10 text-sm text-muted">
+            For teams that need roles, reviews and one bill.
+          </p>
+          <p class="mt-6 flex items-baseline gap-1">
+            <span
+              data-monthly="49"
+              data-yearly="39"
+              class="text-4xl font-bold tracking-tight tabular-nums"
+              >$49</span
+            >
+            <span class="text-sm text-muted">/ month</span>
+          </p>
+          <p data-note="Billed $468 a year" class="mt-1 h-5 text-xs text-muted"></p>
+          <a
+            href="#"
+            class="mt-6 rounded-xl border border-line py-2.5 text-center text-sm font-semibold transition hover:bg-well active:scale-[0.98]"
+            >Talk to us</a
+          >
+          <ul class="mt-8 space-y-3 text-sm">
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Everything in Pro
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >1 TB of storage
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Support in an hour
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Single sign-on
+            </li>
+            <li class="flex gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                class="mt-0.5 size-4 shrink-0 fill-none stroke-emerald-6 stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              >Team roles
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- the small print, with an icon each; wraps to two lines on a phone -->
+      <ul class="mt-14 flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-muted">
+        <li class="flex items-center gap-2">
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4 fill-none stroke-current stroke-2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg
+          >Secure payments
+        </li>
+        <li class="flex items-center gap-2">
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4 fill-none stroke-current stroke-2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M1 4v6h6" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg
+          >Cancel any time
+        </li>
+        <li class="flex items-center gap-2">
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4 fill-none stroke-current stroke-2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" /></svg
+          >14-day trial of Pro
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

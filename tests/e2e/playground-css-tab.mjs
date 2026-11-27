@@ -1,5 +1,6 @@
 // The generated CSS as an editor tab (kbach.css), and scrolling past the last line.
 import { chromium } from 'playwright';
+import { cdnPage } from './example-link.js';
 let failures = 0;
 const check = (ok, msg) => {
   console.log((ok ? 'OK   ' : 'FAIL ') + msg);
@@ -10,7 +11,7 @@ const ctx = await b.newContext({ viewport: { width: 1920, height: 1000 }, permis
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => !/about:srcdoc/.test(e.stack || '') && errors.push(e.message));
-await p.goto('http://localhost:5176/en/playground', { waitUntil: 'networkidle' });
+await p.goto('http://localhost:5176/playground', { waitUntil: 'networkidle' });
 await p.evaluate(() => localStorage.clear());
 await p.reload({ waitUntil: 'networkidle' });
 await p.waitForTimeout(1200);
@@ -23,7 +24,8 @@ const setFiles = async (html, script) => {
   await tab('script').click();
   await p.fill(shown + ' .cm-content', script);
   await tab('index.html').click();
-  await p.fill(shown + ' .cm-content', html);
+  // a whole page, as HTML mode has one: it loads kbach.config.js (the landing page's, darkMode: 'class'), then the CDN script
+  await p.fill(shown + ' .cm-content', cdnPage(html));
   await p.waitForTimeout(900);
 };
 

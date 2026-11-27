@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useT } from '../lib/i18n';
 import { clsx } from '@kbach/react';
 import { highlight, type TokenType } from '../markdown/highlight';
 import type { CodeBlock as CodeBlockData } from '../markdown/parse';
@@ -44,12 +43,11 @@ const LANG_LABEL: Record<string, string> = {
 
 export function CopyButton({ text, className, tone = 'code' }: { text: string; className?: string; tone?: 'code' | 'page' | 'editor' }) {
   const [done, setDone] = useState(false);
-  const t = useT();
   return (
     <button
       type="button"
-      aria-label={done ? t('Copied') : t('Copy code')}
-      title={done ? t('Copied') : t('Copy')}
+      aria-label={done ? 'Copied' : 'Copy code'}
+      title={done ? 'Copied' : 'Copy'}
       onClick={() => {
         navigator.clipboard?.writeText(text).then(() => {
           setDone(true);
@@ -57,13 +55,14 @@ export function CopyButton({ text, className, tone = 'code' }: { text: string; c
         });
       }}
       className={clsx(
-        'inline-flex items-center justify-center size-7 rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-gold',
+        // on a touch screen an invisible ring (before:) widens what a finger can hit to 48px, without growing the button
+        'relative inline-flex items-center justify-center size-7 rounded-md transition-colors pointer-coarse:before:absolute pointer-coarse:before:-inset-2.5 focus-visible:outline-2 focus-visible:outline-gold',
         // editor: the playground's editor bar, light or dark with the site
         tone === 'code'
-          ? 'text-[#9aa8ae] hover:text-[#ece6d8] hover:bg-white/10'
+          ? 'text-[#9aa8ae] hover:text-[#ece6d8] hover:bg-white/10 active:text-[#ece6d8] active:bg-white/10'
           : tone === 'editor'
-            ? 'text-(--ed-icon) hover:text-(--ed-icon-hover) hover:bg-(--ed-hover)'
-            : 'text-muted hover:text-ink hover:bg-raised',
+            ? 'text-(--ed-icon) hover:text-(--ed-icon-hover) hover:bg-(--ed-hover) active:text-(--ed-icon-hover) active:bg-(--ed-hover)'
+            : 'text-muted hover:text-ink hover:bg-raised active:text-ink active:bg-raised',
         className,
       )}
     >
@@ -166,7 +165,7 @@ export function CodeTabs({ items }: { items: CodeBlockData[] }) {
             onClick={() => setActive(n)}
             className={clsx(
               'relative flex h-full items-center gap-1.5 px-3 text-[13px] font-medium transition-colors',
-              n === active ? 'text-snippet-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-gold' : 'text-snippet-muted hover:text-snippet-ink',
+              n === active ? 'text-snippet-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-gold' : 'text-snippet-muted hover:text-snippet-ink active:text-snippet-ink',
             )}
           >
             {/* npm, pnpm, yarn, bun, Expo, React Native CLI: their logos */}

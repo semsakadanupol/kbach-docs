@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign-up form: checks as you type, in TypeScript</title>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <!-- two halves from lg (the picture side hides below it), the form centered in its half -->
+    <main class="-m-6 grid min-h-screen lg:grid-cols-2">
+      <aside
+        class="relative isolate hidden flex-col justify-between overflow-hidden bg-linear-to-br from-emerald-6 to-teal-9 p-12 text-white lg:flex"
+      >
+        <div
+          class="absolute -top-24 -right-24 -z-10 size-96 rounded-full bg-white/10 blur-2xl"
+        ></div>
+        <div
+          class="absolute -bottom-32 -left-16 -z-10 size-80 rounded-full bg-teal-4/30 blur-3xl"
+        ></div>
+        <a href="#" class="flex items-center gap-2.5 text-lg font-bold">
+          <span
+            class="grid size-9 place-items-center rounded-xl bg-white/15 ring-1 ring-white/25 backdrop-blur"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              class="size-5 fill-none stroke-current stroke-2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+            </svg>
+          </span>
+          Riverleaf
+        </a>
+        <figure class="m-0 max-w-md">
+          <blockquote class="m-0 text-2xl leading-snug font-medium text-balance">
+            “We moved the whole team over in an afternoon. A month later nobody remembers the old
+            tool.”
+          </blockquote>
+          <figcaption class="mt-6 flex items-center gap-3">
+            <span
+              class="grid size-11 place-items-center rounded-full bg-white/20 font-semibold ring-2 ring-white/30"
+              >DN</span
+            >
+            <span
+              ><b class="block">Dara Nguon</b
+              ><span class="text-sm text-white/75">Head of design, Mekong Labs</span></span
+            >
+          </figcaption>
+        </figure>
+      </aside>
+
+      <div class="grid place-items-center px-6 py-12">
+        <div class="w-full max-w-sm">
+          <div id="form-box" class="motion-safe:animate-rise">
+            <form id="form" novalidate>
+              <h1 class="text-2xl font-bold tracking-tight">Create your account</h1>
+              <p class="mt-1.5 text-sm text-muted">Free for 14 days. No card needed.</p>
+
+              <div class="mt-8 space-y-5">
+                <label class="block">
+                  <span class="text-sm font-medium">Name</span>
+                  <input
+                    name="name"
+                    autocomplete="name"
+                    placeholder="Sokha Kim"
+                    required
+                    class="mt-1.5 block h-11 w-full rounded-xl border border-line bg-card px-3.5 text-sm outline-none transition placeholder:text-muted/60 focus:border-brand focus:ring-4 focus:ring-brand/15 user-invalid:border-rose-6 user-invalid:focus:ring-rose-6/15"
+                  />
+                </label>
+
+                <!-- the message shows only once the field has been left wrong (user-invalid, through peer) -->
+                <label class="block">
+                  <span class="text-sm font-medium">Email</span>
+                  <span class="relative mt-1.5 block">
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="pointer-events-none absolute top-3.5 left-3.5 size-4 fill-none stroke-muted stroke-2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="m22 6-10 7L2 6" />
+                    </svg>
+                    <input
+                      name="email"
+                      type="email"
+                      autocomplete="email"
+                      placeholder="you@example.com"
+                      required
+                      class="peer block h-11 w-full rounded-xl border border-line bg-card pr-3.5 pl-10 text-sm outline-none transition placeholder:text-muted/60 focus:border-brand focus:ring-4 focus:ring-brand/15 user-invalid:border-rose-6 user-invalid:focus:ring-rose-6/15"
+                    />
+                    <span
+                      class="mt-1.5 hidden text-xs text-rose-7 peer-user-invalid:block dark:text-rose-4"
+                      >Enter an email address, like you@example.com</span
+                    >
+                  </span>
+                </label>
+
+                <label class="block">
+                  <span class="flex items-baseline justify-between text-sm font-medium">
+                    Password
+                    <span id="strength-label" class="text-xs font-normal text-muted"
+                      >8 characters or more</span
+                    >
+                  </span>
+                  <span class="relative mt-1.5 block">
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autocomplete="new-password"
+                      minlength="8"
+                      required
+                      class="block h-11 w-full rounded-xl border border-line bg-card pr-11 pl-3.5 text-sm outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/15 user-invalid:border-rose-6 user-invalid:focus:ring-rose-6/15"
+                    />
+                    <button
+                      id="reveal"
+                      type="button"
+                      aria-label="Show the password"
+                      aria-pressed="false"
+                      class="absolute inset-y-0 right-0 grid w-11 place-items-center text-muted transition-colors hover:text-ink"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        class="size-4 fill-none stroke-current stroke-2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                        <path id="eye-slash" class="hidden" d="M3 3l18 18" />
+                      </svg>
+                    </button>
+                  </span>
+                  <!-- four bars: as many fill as the password is strong, in that strength's color -->
+                  <span id="meter" class="mt-2.5 grid grid-cols-4 gap-1.5" aria-hidden="true">
+                    <span class="h-1 rounded-full bg-well transition-colors duration-300"></span>
+                    <span class="h-1 rounded-full bg-well transition-colors duration-300"></span>
+                    <span class="h-1 rounded-full bg-well transition-colors duration-300"></span>
+                    <span class="h-1 rounded-full bg-well transition-colors duration-300"></span>
+                  </span>
+                </label>
+
+                <!-- a checkbox drawn with classes: the box fills and the tick shows when it's checked -->
+                <label class="flex cursor-pointer items-start gap-3 text-sm text-muted">
+                  <input name="terms" type="checkbox" required class="peer sr-only" />
+                  <span
+                    class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border border-line bg-card text-transparent transition peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-4 peer-focus-visible:ring-brand/20"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="size-3.5 fill-none stroke-current stroke-[3]"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  </span>
+                  <span
+                    >I agree to the
+                    <a href="#" class="font-medium text-ink underline underline-offset-2">terms</a>
+                    and the
+                    <a href="#" class="font-medium text-ink underline underline-offset-2"
+                      >privacy policy</a
+                    ></span
+                  >
+                </label>
+              </div>
+
+              <button
+                id="submit"
+                class="mt-8 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand text-sm font-semibold text-white shadow-lg shadow-brand/25 transition hover:bg-brand/90 active:scale-[0.98] disabled:opacity-70"
+              >
+                <svg
+                  id="spinner"
+                  viewBox="0 0 24 24"
+                  class="hidden size-4 animate-spin fill-none stroke-current stroke-[3]"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 3a9 9 0 1 0 9 9" />
+                </svg>
+                <span id="submit-label">Create account</span>
+              </button>
+              <p class="mt-6 text-center text-sm text-muted">
+                Already have an account?
+                <a href="#" class="font-semibold text-accent hover:underline">Sign in</a>
+              </p>
+            </form>
+          </div>
+
+          <!-- after a good submit: a tick that pops, and what happens next -->
+          <div id="done" class="hidden text-center">
+            <span
+              class="mx-auto grid size-16 motion-safe:animate-pop place-items-center rounded-full bg-brand/15 text-accent"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-8 fill-none stroke-current stroke-[2.5]"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </span>
+            <h2 class="mt-6 text-2xl font-bold tracking-tight">Check your inbox</h2>
+            <p class="mt-2 text-sm text-muted">
+              We sent a link to <b id="sent-to" class="font-semibold text-ink"></b>. Open it to
+              finish signing up.
+            </p>
+            <button id="again" class="mt-8 text-sm font-semibold text-accent hover:underline">
+              Start over
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

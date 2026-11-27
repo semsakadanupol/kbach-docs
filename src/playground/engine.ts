@@ -103,7 +103,7 @@ export function cssForClasses(classes: string[], usedTags: Set<string>, base = '
   const unknown: string[] = [];
   let ruleCount = 0;
   for (const cls of classes) {
-    if (byClass.has(cls) || cls === 'group' || cls === 'peer' || /^(group|peer)\/./.test(cls) || cls === 'dark') continue;
+    if (byClass.has(cls) || MARKER.test(cls)) continue;
     const rules = rulesFor(cls);
     if (!rules.length) {
       if (!projectClasses.has(cls)) unknown.push(cls);
@@ -124,7 +124,8 @@ export function engineLoaded(): boolean {
   return loaded;
 }
 
-const MARKER = /^(group|peer)(\/[\w-]+)?$/;
+/** Classes with no CSS of their own that still mean something: group and peer (named ones too), and dark (the mode, with darkMode: 'class'). */
+const MARKER = /^(?:(?:group|peer)(?:\/[\w-]+)?|dark)$/;
 
 /** The CSS one class compiles to, laid out one declaration per line; '' when it has none. */
 export function cssForClass(cls: string): string {
