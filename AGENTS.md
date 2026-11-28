@@ -95,6 +95,7 @@ npm run lint       # ESLint
 | The header, phone menu, footer | `src/components/site/Header.tsx`, `MobileNav.tsx`, `Footer.tsx` |
 | The footer's "Built with" row (what the site is made with) | `BUILT_WITH` in `Footer.tsx` (marks: `TOOLS` in `BrandIcon.tsx`, kept out of `BRANDS` so code tabs don't pick them up) |
 | A docs page's layout (sidebar, title, "On this page") | `src/components/site/DocPageView.tsx` |
+| A code block, and its npm / pnpm / yarn / bun tabs | `src/components/CodeBlock.tsx` (`CodeTabs`: the tabs scroll in a row of their own beside the pinned copy button, and their logos show only when the row has room, `@container` + `@min-[14.5rem]:`; on a phone they ran past the edge, 2026-11-28; `tests/e2e/install-tabs.mjs` checks 320, 360 and 390px) |
 | The 404 page | `src/components/site/NotFound.tsx` |
 | `<html>`, fonts, tab icon, the no-flash theme script | `src/components/site/RootDocument.tsx` |
 | Page titles, descriptions, share tags | `src/lib/metadata.ts` |

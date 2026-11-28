@@ -69,5 +69,29 @@ await p.waitForTimeout(500);
 s = await state(p);
 check(!s.overflows && s.tabs.every((t) => t.named), 'wide again: every name is back');
 
+// --- a code block's npm / pnpm / yarn / bun tabs on a phone (2026-11-28: they ran past the edge,
+// cutting off bun and the copy button): every tab fits its row, the copy button stays in the box,
+// and the logos show when there's room for them (from 360px), words alone below
+for (const [w, logos] of [[320, false], [360, true], [390, true]]) {
+  const phone = await b.newPage({ viewport: { width: w, height: 800 }, isMobile: true, hasTouch: true });
+  await phone.goto(URL, { waitUntil: 'networkidle' });
+  await phone.waitForTimeout(500);
+  const rows = await phone.$$eval('main [role="tabpanel"]:not([hidden]) [role="tablist"]', (lists) =>
+    lists
+      .filter((l) => l.querySelector('button[aria-label*="opy"]'))
+      .map((l) => {
+        const box = l.getBoundingClientRect();
+        const row = l.firstElementChild;
+        const copy = l.querySelector('button[aria-label*="opy"]').getBoundingClientRect();
+        const icons = [...l.querySelectorAll('[role="tab"] svg')].filter((svg) => svg.getBoundingClientRect().width > 0).length;
+        return { tabs: l.querySelectorAll('[role="tab"]').length, fits: row.scrollWidth <= row.clientWidth, copyIn: copy.left >= box.left && copy.right <= box.right + 0.5, icons };
+      }),
+  );
+  const pm = rows.find((r) => r.tabs === 4);
+  check(!!pm && rows.every((r) => r.fits && r.copyIn), w + 'px: every code block’s tabs fit their row, the copy button inside the box ' + JSON.stringify(rows));
+  check(!!pm && (logos ? pm.icons === 4 : pm.icons === 0), w + 'px: npm, pnpm, yarn and bun ' + (logos ? 'with their logos' : 'as words (no room for the logos)') + ' (' + pm?.icons + ' logos)');
+  await phone.close();
+}
+
 await b.close();
 process.exit(failures ? 1 : 0);

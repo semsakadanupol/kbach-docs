@@ -155,26 +155,34 @@ export function CodeTabs({ items }: { items: CodeBlockData[] }) {
   const block = items[active];
   return (
     <div className="my-6 overflow-hidden rounded-xl border border-line bg-snippet shadow-sm dark:shadow-none">
-      <div className="flex h-11 items-center border-b border-line bg-snippet-bar px-2 dark:border-white/5" role="tablist">
-        {items.map((it, n) => (
-          <button
-            key={it.tab}
-            type="button"
-            role="tab"
-            aria-selected={n === active}
-            onClick={() => setActive(n)}
-            className={clsx(
-              'relative flex h-full items-center gap-1.5 px-3 text-[13px] font-medium transition-colors',
-              n === active ? 'text-snippet-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-gold' : 'text-snippet-muted hover:text-snippet-ink active:text-snippet-ink',
-            )}
-          >
-            {/* npm, pnpm, yarn, bun, Expo, React Native CLI: their logos */}
-            {brandForTab(it.tab) && <BrandIcon brand={brandForTab(it.tab)!} className="text-[14px]" />}
-            {it.tab}
-          </button>
-        ))}
-        {block.title && <span className="mr-1 ml-auto hidden truncate font-mono text-xs text-snippet-muted sm:block">{block.title}</span>}
-        <CopyButton text={block.code} tone="page" className={block.title ? '' : 'ml-auto'} />
+      <div className="flex h-11 items-center gap-1 border-b border-line bg-snippet-bar pr-2 dark:border-white/5" role="tablist">
+        {/* The tabs in a row of their own that scrolls sideways when it must, the copy button pinned
+            beside it: on a phone, npm, pnpm, yarn and bun ran past the edge and cut off bun and the
+            copy button (2026-11-28). Tighter there, and the logos only when the row has room for
+            them (a container query on the row): the four fit at 320px too, as words. */}
+        <div className="@container flex h-full min-w-0 flex-1 items-center overflow-x-auto pl-1 [scrollbar-width:none] sm:pl-2">
+          {items.map((it, n) => (
+            <button
+              key={it.tab}
+              type="button"
+              role="tab"
+              aria-selected={n === active}
+              onClick={() => setActive(n)}
+              className={clsx(
+                'relative flex h-full shrink-0 items-center gap-1 px-1.5 text-[13px] font-medium whitespace-nowrap transition-colors sm:gap-1.5 sm:px-3',
+                n === active
+                  ? 'text-snippet-ink after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-full after:bg-gold sm:after:inset-x-3'
+                  : 'text-snippet-muted hover:text-snippet-ink active:text-snippet-ink',
+              )}
+            >
+              {/* npm, pnpm, yarn, bun, Expo, React Native CLI: their logos */}
+              {brandForTab(it.tab) && <BrandIcon brand={brandForTab(it.tab)!} className="hidden text-[14px] @min-[14.5rem]:block" />}
+              {it.tab}
+            </button>
+          ))}
+        </div>
+        {block.title && <span className="mr-1 hidden max-w-[40%] shrink truncate font-mono text-xs text-snippet-muted sm:block">{block.title}</span>}
+        <CopyButton text={block.code} tone="page" className="shrink-0" />
       </div>
       <CodeLines code={block.code} lang={block.lang} highlightLines={block.highlight} />
     </div>
